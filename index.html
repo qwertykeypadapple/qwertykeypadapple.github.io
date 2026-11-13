@@ -121,10 +121,10 @@
   }
   .front .cap {
     height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    font: italic 500 19px/1 var(--serif); color: #1a2038; white-space: nowrap;
+    font: italic 500 18px/1 var(--serif); color: #1a2038; white-space: nowrap;
   }
-  .front .cap span { overflow: hidden; text-overflow: ellipsis; padding: 2px 0; }
-  .front .cap em { font: 500 10px var(--sans); letter-spacing: .16em; text-transform: uppercase; color: #9a8f78; font-style: normal; }
+  .front .cap span { flex: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; padding: 2px 0; }
+  .front .cap em { min-width: 0; overflow: hidden; text-overflow: ellipsis; font: 500 10px var(--sans); letter-spacing: .16em; text-transform: uppercase; color: #9a8f78; font-style: normal; }
   /* a push pin through the top margin, like a notice board */
   .pin {
     position: absolute; top: 6px; left: 50%; width: 18px; height: 18px; margin-left: -9px;
@@ -138,7 +138,7 @@
   /* back: the write-up */
   .back {
     transform: rotateY(180deg);
-    padding: 20px 20px 18px; display: flex; flex-direction: column; color: var(--text);
+    padding: 16px 18px 16px; display: flex; flex-direction: column; color: var(--text);
     background: linear-gradient(155deg, var(--sapphire) 0%, var(--sapphire-deep) 100%);
     border: 1px solid rgba(205, 174, 116, .35);
   }
@@ -148,18 +148,21 @@
     object-fit: cover; object-position: top center; opacity: .2; filter: saturate(.7);
   }
   .back > :not(.bg) { position: relative; }
-  .back h2 { margin: 0 0 6px; font: 500 23px/1.1 var(--serif); letter-spacing: -.01em; }
+  .back h2 { margin: 0 0 5px; font: 500 21px/1.1 var(--serif); letter-spacing: -.01em; }
   .back .kind {
     font-size: 10px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--gold);
-    padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid rgba(205, 174, 116, .28);
+    padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid rgba(205, 174, 116, .28);
   }
-  .back p { margin: 0; font-size: 13.5px; line-height: 1.5; color: rgba(243, 237, 224, .95); text-shadow: 0 1px 2px rgba(0, 0, 0, .45); flex: 1; min-height: 0; overflow: auto; }
-  .back .links { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .back p { margin: 0; font-size: 13px; line-height: 1.42; color: rgba(243, 237, 224, .95); text-shadow: 0 1px 2px rgba(0, 0, 0, .45); flex: 1; min-height: 0; overflow: auto; }
+  .back .links { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
   .back a {
-    padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-decoration: none;
+    padding: 7px 13px; border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-decoration: none;
     color: var(--ink); background: var(--gold-soft); border: 1px solid var(--gold-soft); transition: transform .15s, background .2s;
   }
   .back a.ghost { color: var(--gold-soft); background: transparent; border-color: rgba(205, 174, 116, .6); }
+  .back .lock { align-self: center; font-size: 10px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+  .card.hero .face { box-shadow: 0 30px 70px rgba(0, 0, 0, .65), 0 0 0 1px rgba(205, 174, 116, .55), 0 2px 6px rgba(0, 0, 0, .4); }
+  .card.hero .pin { width: 22px; height: 22px; margin-left: -11px; top: 4px; }
   .back a:hover { transform: translateY(-2px); }
 
   footer { text-align: center; padding: 10px 20px 52px; color: var(--muted); font-size: 13px; letter-spacing: .02em; }
@@ -177,7 +180,7 @@
 <header>
   <div class="eyebrow"><b></b>qwertykeypadapple · Selected work<b></b></div>
   <h1>Things I've <span class="b">built</span><span class="r">.</span></h1>
-  <p class="lede">Every project is a photo pinned to the board. Tap one to flip it over and read what it is.</p>
+  <p class="lede">Every project is a photo pinned to the board, circling the one in the middle. Tap one to flip it over and read what it is.</p>
   <button class="shuffle" id="shuffle" type="button">Scatter them again</button>
 </header>
 
@@ -189,6 +192,9 @@
 const GH = "https://github.com/qwertykeypadapple/";
 
 const projects = [
+  // first entry sits in the centre of the board
+  { repo: "investor-connect", name: "Investor Connect", kind: "Web app · AI agent", img: "investor-connect.jpg", live: "https://investor-connect-051f.onrender.com/", private: true,
+    text: "Paste a startup's address. An AI agent clicks through the site in a real browser, then shows what an investor sees and what to fix first." },
   { repo: "neural-debris-solution", name: "Neural Debris", kind: "Kaggle · 4th place", img: "neural-debris-solution.png",
     text: "4th place in ESA's Neural Debris Removal competition: un-poisoning a satellite streak detector with distillation-constrained machine unlearning." },
   { repo: "fedpbc-demo", name: "FedPBC Demo", kind: "Interactive explainer", img: "fedpbc-demo.jpg", live: "https://fedpbc-demo.onrender.com/",
@@ -220,8 +226,8 @@ const PINS = ["#2c4f9e", "#9b2335", "#1f7a5c", "#c9a24f", "#6a3f8f", "#b5683a", 
 
 const cards = projects.map((p, i) => {
   const card = document.createElement("div");
-  card.className = "card" + (i % 2 ? " red" : "");
-  card.style.setProperty("--pin", PINS[i % PINS.length]);
+  card.className = "card" + (i % 2 ? " red" : "") + (i ? "" : " hero");
+  card.style.setProperty("--pin", i ? PINS[i % PINS.length] : "#c9a24f");
   card.tabIndex = 0;
   card.setAttribute("role", "button");
   card.setAttribute("aria-pressed", "false");
@@ -239,8 +245,9 @@ const cards = projects.map((p, i) => {
         <div class="kind">${p.kind}</div>
         <p>${p.text}</p>
         <div class="links">
-          <a href="${GH + p.repo}" target="_blank" rel="noopener">GitHub ↗</a>
-          ${p.live ? `<a class="ghost" href="${p.live}" target="_blank" rel="noopener">Live site ↗</a>` : ""}
+          ${p.private ? "" : `<a href="${GH + p.repo}" target="_blank" rel="noopener">GitHub ↗</a>`}
+          ${p.live ? `<a class="${p.private ? "" : "ghost"}" href="${p.live}" target="_blank" rel="noopener">Live site ↗</a>` : ""}
+          ${p.private ? `<span class="lock">Private repo</span>` : ""}
         </div>
       </div>
     </div>`;
@@ -273,66 +280,121 @@ function rng(seed) {
 
 let seed = 7;
 
-function scatter() {
-  const rand = rng(seed);
-  const W = table.clientWidth;
-  const w = Math.min(300, W - 24);
-  const h = Math.round(w * 0.72) + 84;
-  const cols = Math.max(1, Math.min(4, Math.floor(W / (w * 0.94))));
+const PIN_Y = 15, CLEAR = 14;
+const heightFor = (w) => Math.round(w * 0.72) + 84;
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+// A pin may only touch its own card. Cards turn about their pin, so the pin
+// point is fixed; test it against every other card, both tilted and straight
+// (a flipped card straightens).
+function covers(c, px, py, deg) {
+  const cx = c.x + c.w / 2, cy = c.y + PIN_Y, a = (-deg * Math.PI) / 180;
+  const dx = px - cx, dy = py - cy;
+  const lx = cx + dx * Math.cos(a) - dy * Math.sin(a);
+  const ly = cy + dx * Math.sin(a) + dy * Math.cos(a);
+  return lx > c.x - CLEAR && lx < c.x + c.w + CLEAR && ly > c.y - CLEAR && ly < c.y + c.h + CLEAR;
+}
+function pinHit(a, b) {
+  const px = a.x + a.w / 2, py = a.y + PIN_Y;
+  return covers(b, px, py, b.r) || covers(b, px, py, 0);
+}
+const pinsClear = (c, placed) => placed.every((p) => !pinHit(c, p) && !pinHit(p, c));
+
+// Wide boards: the first project sits in the centre and the rest circle it.
+function ring(rand, W, n) {
+  const wr = clamp(W * 0.2, 230, 260), hr = heightFor(wr);
+  const wc = Math.round(wr * 1.25), hc = heightFor(wc);
+  const a = (W - wr) / 2 - 16;
+  const perimeter = (b) => Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
+  let b = (hr + hc) / 2 + 24;
+  while (perimeter(b) < n * wr * 0.95) b += 12;
+
+  let out;
+  // widen the oval until every pin is clear
+  for (let attempt = 0; attempt < 40; attempt++, b += 20) {
+    const cx = W / 2, cy = b + hr / 2 + 34;
+    out = [{ x: cx - wc / 2, y: cy - hc / 2, w: wc, h: hc, r: (rand() - 0.5) * 4 }];
+
+    // points evenly spaced along the oval, by distance rather than by angle
+    const N = 720, pts = [], cum = [0];
+    for (let i = 0; i < N; i++) {
+      const t = (2 * Math.PI * i) / N;
+      pts.push([cx + a * Math.cos(t), cy + b * Math.sin(t)]);
+      if (i) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+    }
+    const total = cum[N - 1] + Math.hypot(pts[0][0] - pts[N - 1][0], pts[0][1] - pts[N - 1][1]);
+    const start = rand() * total;
+
+    let ok = true;
+    for (let j = 0; j < n && ok; j++) {
+      const target = (start + (j * total) / n) % total;
+      const [px, py] = pts[Math.max(0, cum.findIndex((d) => d >= target))];
+      ok = false;
+      for (let t = 0; t < 60 && !ok; t++) {
+        const k = t < 30 ? 1 : Math.max(0, 1 - (t - 30) / 25);
+        const c = {
+          x: clamp(px - wr / 2 + (rand() - 0.5) * 26 * k, 0, W - wr),
+          y: py - hr / 2 + (rand() - 0.5) * 26 * k,
+          w: wr, h: hr, r: (rand() - 0.5) * 18 * k,
+        };
+        if (pinsClear(c, out)) { out.push(c); ok = true; }
+      }
+    }
+    if (ok) break;
+  }
+  return out;
+}
+
+// Narrow screens have no room for a ring: the first project leads, the rest scatter below.
+function column(rand, W, n) {
+  const w = Math.min(300, W - 24), h = heightFor(w);
+  const cols = Math.max(1, Math.floor(W / (w * 0.94)));
   const cellW = W / cols;
   const cellH = h * (cols === 1 ? 1.08 : 1.05);
   const stagger = cols > 1 ? cellH * 0.38 : 0;
+  const top = h + 70;
+  const out = [{ x: (W - w) / 2, y: 24, w, h, r: (rand() - 0.5) * 4 }];
+  for (let slot = 0; slot < n; slot++) {
+    const col = slot % cols, row = Math.floor(slot / cols);
+    const slack = (cellW - w) / 2;
+    let c;
+    for (let t = 0; t < 90; t++) {
+      const k = t < 45 ? 1 : Math.max(0, 1 - (t - 45) / 40);
+      c = {
+        x: clamp(col * cellW + slack + (rand() - 0.5) * 2 * Math.min(slack + 14, 46) * k, 0, W - w),
+        y: top + row * cellH + (col % 2 ? stagger : 0) + (rand() - 0.5) * 44 * k,
+        w, h, r: (rand() - 0.5) * (cols === 1 ? 8 : 20) * k,
+      };
+      if (pinsClear(c, out)) break;
+    }
+    out.push(c);
+  }
+  return out;
+}
 
-  // deal the cards into the cells in a random order
-  const order = cards.map((_, i) => i);
+function scatter() {
+  const rand = rng(seed);
+  const W = table.clientWidth;
+
+  // the centre card stays put; the others are dealt in a random order
+  const order = cards.slice(1);
   for (let i = order.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
     [order[i], order[j]] = [order[j], order[i]];
   }
+  order.unshift(cards[0]);
 
-  // A pin may only touch its own card. Cards turn about their pin, so the pin
-  // point is fixed; test it against every other card, both tilted and straight
-  // (a flipped card straightens).
-  const PIN_Y = 15, CLEAR = 14;
-  const covers = (c, px, py, deg) => {
-    const cx = c.x + w / 2, cy = c.y + PIN_Y, a = (-deg * Math.PI) / 180;
-    const dx = px - cx, dy = py - cy;
-    const lx = cx + dx * Math.cos(a) - dy * Math.sin(a);
-    const ly = cy + dx * Math.sin(a) + dy * Math.cos(a);
-    return lx > c.x - CLEAR && lx < c.x + w + CLEAR && ly > c.y - CLEAR && ly < c.y + h + CLEAR;
-  };
-  const pinHit = (a, b) => {
-    const px = a.x + w / 2, py = a.y + PIN_Y;
-    return covers(b, px, py, b.r) || covers(b, px, py, 0);
-  };
-
-  const placed = [];
+  const spots = (W >= 800 ? ring : column)(rand, W, order.length - 1);
   let bottom = 0;
-  order.forEach((ci, slot) => {
-    const col = slot % cols, row = Math.floor(slot / cols);
-    const slack = (cellW - w) / 2;
-    let c;
-    // try scattered spots first, then calm the scatter down until the pins are clear
-    for (let t = 0; t < 90; t++) {
-      const k = t < 45 ? 1 : Math.max(0, 1 - (t - 45) / 40);
-      const jx = (rand() - 0.5) * 2 * Math.min(slack + 14, 46) * k;
-      const jy = (rand() - 0.5) * 44 * k;
-      c = {
-        x: Math.max(0, Math.min(W - w, col * cellW + slack + jx)),
-        y: Math.max(0, row * cellH + (col % 2 ? stagger : 0) + jy + 24),
-        r: (rand() - 0.5) * (cols === 1 ? 8 : 20) * k,
-      };
-      if (placed.every((p) => !pinHit(c, p) && !pinHit(p, c))) break;
-    }
-    placed.push(c);
-    const s = cards[ci].style;
-    s.setProperty("--w", w + "px");
-    s.setProperty("--h", h + "px");
+  spots.forEach((c, i) => {
+    const s = order[i].style;
+    s.setProperty("--w", c.w + "px");
+    s.setProperty("--h", c.h + "px");
     s.setProperty("--x", c.x + "px");
     s.setProperty("--y", c.y + "px");
     s.setProperty("--r", c.r.toFixed(1) + "deg");
-    s.setProperty("--z", 1 + Math.floor(rand() * 9));
-    bottom = Math.max(bottom, c.y + h);
+    s.setProperty("--z", i ? 1 + Math.floor(rand() * 9) : 10);
+    bottom = Math.max(bottom, c.y + c.h);
   });
   table.style.height = bottom + 40 + "px";
 }

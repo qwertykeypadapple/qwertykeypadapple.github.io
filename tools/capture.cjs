@@ -7,6 +7,7 @@ const shots = [
   ["fedpbc-demo", "https://fedpbc-demo.onrender.com/"],
   ["federation-quest", "https://federation-quest.onrender.com/"],
   ["thinking-outside-the-box", "https://nukkadai.onrender.com/"],
+  ["investor-connect", "https://investor-connect-051f.onrender.com/"],
   ["samhita-health", "https://samhita-health.onrender.com/"],
   ["pokewords", "https://pokewords.onrender.com/"],
   ["daily-mind", "https://daily-mind.onrender.com/"],
