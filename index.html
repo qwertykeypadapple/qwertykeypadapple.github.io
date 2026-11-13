@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>qwertykeypadapple · Projects</title>
+<meta name="description" content="Everything I've built, scattered on one table. Tap a photo to flip it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #090c16;
+    --sapphire: #22355f;
+    --sapphire-deep: #101b36;
+    --oxblood: #7a1c2b;
+    --oxblood-deep: #48101a;
+    --gold: #cdae74;
+    --gold-soft: #e6d3a8;
+    --paper: #f5efe3;
+    --text: #f3ede0;
+    --muted: #9c9aa6;
+    --serif: "Fraunces", Georgia, serif;
+    --sans: "Inter", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--sans);
+    color: var(--text);
+    background: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* quiet sapphire and oxblood light behind the table */
+  .glow { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .glow i {
+    position: absolute; border-radius: 50%; filter: blur(110px); opacity: .5;
+    animation: drift 26s ease-in-out infinite alternate;
+  }
+  .glow i:nth-child(1) { width: 56vmax; height: 56vmax; left: -22vmax; top: -24vmax; background: #1c3470; }
+  .glow i:nth-child(2) { width: 46vmax; height: 46vmax; right: -18vmax; top: 22vh; background: #6a1626; animation-delay: -9s; }
+  .glow i:nth-child(3) { width: 40vmax; height: 40vmax; left: 16vw; bottom: -26vmax; background: #14244c; animation-delay: -15s; }
+  .glow::after {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 35%, transparent 0, rgba(9, 12, 22, .8) 80%);
+  }
+  @keyframes drift { to { transform: translate(5vmax, 3vmax) scale(1.1); } }
+
+  header, main, footer { position: relative; z-index: 1; }
+
+  header { text-align: center; padding: 72px 20px 12px; }
+  .eyebrow {
+    display: inline-flex; gap: 14px; align-items: center;
+    font-size: 12px; font-weight: 500; letter-spacing: .32em; text-transform: uppercase; color: var(--gold);
+  }
+  .eyebrow b { width: 34px; height: 1px; background: var(--gold); opacity: .6; }
+  h1 {
+    margin: 22px 0 14px;
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(44px, 8.4vw, 92px); line-height: 1; letter-spacing: -.02em;
+  }
+  h1 .b { font-style: italic; color: var(--gold-soft); }
+  h1 .r { color: #b8384b; }
+  .lede { margin: 0 auto; max-width: 480px; color: var(--muted); font-size: 16px; line-height: 1.6; }
+  .shuffle {
+    margin-top: 26px; padding: 12px 26px; border-radius: 999px; cursor: pointer;
+    font: 500 13px var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--gold-soft);
+    border: 1px solid rgba(205, 174, 116, .5); background: rgba(205, 174, 116, .06);
+    transition: background .25s, color .25s, border-color .25s;
+  }
+  .shuffle:hover { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+  .shuffle:focus-visible, .card:focus-visible, .back a:focus-visible { outline: 2px solid var(--gold-soft); outline-offset: 4px; }
+
+  /* the table the photos are thrown onto */
+  main { padding: 34px 16px 40px; }
+  .board {
+    max-width: 1320px; margin: 0 auto; padding: 26px 20px; border-radius: 6px;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
+      linear-gradient(160deg, rgba(34, 53, 95, .34), rgba(16, 22, 40, .5) 55%, rgba(72, 16, 26, .3));
+    border: 1px solid rgba(205, 174, 116, .45);
+    box-shadow: 0 0 0 9px #17120f, 0 0 0 10px rgba(205, 174, 116, .3), 0 40px 80px rgba(0, 0, 0, .55), inset 0 0 60px rgba(0, 0, 0, .5);
+  }
+  @media (max-width: 600px) { .board { padding: 18px 6px; } }
+  .table { position: relative; }
+
+  .card {
+    position: absolute; left: 0; top: 0;
+    width: var(--w); height: var(--h);
+    padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left;
+    cursor: pointer; perspective: 1200px;
+    z-index: var(--z);
+    transform-origin: 50% 15px;
+    transform: translate(var(--x), var(--y)) rotate(var(--r));
+    transition: transform .7s cubic-bezier(.2, .9, .25, 1.15);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card:hover { transform: translate(var(--x), calc(var(--y) - 8px)) rotate(calc(var(--r) * .4)); z-index: 20; }
+  .card.flipped { transform: translate(var(--x), var(--y)) rotate(0deg); z-index: 30; }
+
+  .inner {
+    position: absolute; inset: 0; transform-style: preserve-3d;
+    transition: transform .75s cubic-bezier(.3, .8, .2, 1);
+  }
+  .card.flipped .inner { transform: rotateY(180deg); }
+
+  .face {
+    position: absolute; inset: 0; border-radius: 4px; overflow: hidden;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    box-shadow: 0 24px 50px rgba(0, 0, 0, .55), 0 2px 6px rgba(0, 0, 0, .4);
+  }
+
+  /* front: a photo print */
+  .front { background: var(--paper); padding: 30px 12px 0; display: flex; flex-direction: column; }
+  .front img {
+    width: 100%; flex: 1; min-height: 0; object-fit: cover; object-position: top center;
+    background: #e4dccb; border-radius: 1px; display: block;
+  }
+  .front .cap {
+    height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    font: italic 500 19px/1 var(--serif); color: #1a2038; white-space: nowrap;
+  }
+  .front .cap span { overflow: hidden; text-overflow: ellipsis; padding: 2px 0; }
+  .front .cap em { font: 500 10px var(--sans); letter-spacing: .16em; text-transform: uppercase; color: #9a8f78; font-style: normal; }
+  /* a push pin through the top margin, like a notice board */
+  .pin {
+    position: absolute; top: 6px; left: 50%; width: 18px; height: 18px; margin-left: -9px;
+    border-radius: 50%; z-index: 2;
+    background:
+      radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .85) 0 7%, rgba(255, 255, 255, 0) 30%),
+      radial-gradient(circle at 50% 50%, var(--pin) 0 55%, color-mix(in srgb, var(--pin) 55%, #000) 100%);
+    box-shadow: 4px 6px 5px rgba(0, 0, 0, .38), 1px 1px 1px rgba(0, 0, 0, .35), inset -2px -3px 4px rgba(0, 0, 0, .28);
+  }
+
+  /* back: the write-up */
+  .back {
+    transform: rotateY(180deg);
+    padding: 20px 20px 18px; display: flex; flex-direction: column; color: var(--text);
+    background: linear-gradient(155deg, var(--sapphire) 0%, var(--sapphire-deep) 100%);
+    border: 1px solid rgba(205, 174, 116, .35);
+  }
+  .card.red .back { background: linear-gradient(155deg, var(--oxblood) 0%, var(--oxblood-deep) 100%); }
+  .back .bg {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: top center; opacity: .2; filter: saturate(.7);
+  }
+  .back > :not(.bg) { position: relative; }
+  .back h2 { margin: 0 0 6px; font: 500 23px/1.1 var(--serif); letter-spacing: -.01em; }
+  .back .kind {
+    font-size: 10px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--gold);
+    padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid rgba(205, 174, 116, .28);
+  }
+  .back p { margin: 0; font-size: 13.5px; line-height: 1.5; color: rgba(243, 237, 224, .95); text-shadow: 0 1px 2px rgba(0, 0, 0, .45); flex: 1; min-height: 0; overflow: auto; }
+  .back .links { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .back a {
+    padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-decoration: none;
+    color: var(--ink); background: var(--gold-soft); border: 1px solid var(--gold-soft); transition: transform .15s, background .2s;
+  }
+  .back a.ghost { color: var(--gold-soft); background: transparent; border-color: rgba(205, 174, 116, .6); }
+  .back a:hover { transform: translateY(-2px); }
+
+  footer { text-align: center; padding: 10px 20px 52px; color: var(--muted); font-size: 13px; letter-spacing: .02em; }
+  footer a { color: var(--gold-soft); text-underline-offset: 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .glow i { animation: none; }
+    .card, .inner { transition-duration: .01s; }
+  }
+</style>
+</head>
+<body>
+<div class="glow" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<header>
+  <div class="eyebrow"><b></b>qwertykeypadapple · Selected work<b></b></div>
+  <h1>Things I've <span class="b">built</span><span class="r">.</span></h1>
+  <p class="lede">Every project is a photo pinned to the board. Tap one to flip it over and read what it is.</p>
+  <button class="shuffle" id="shuffle" type="button">Scatter them again</button>
+</header>
+
+<main><div class="board"><div class="table" id="table"></div></div></main>
+
+<footer>All code lives on <a href="https://github.com/qwertykeypadapple">github.com/qwertykeypadapple</a></footer>
+
+<script>
+const GH = "https://github.com/qwertykeypadapple/";
+
+const projects = [
+  { repo: "neural-debris-solution", name: "Neural Debris", kind: "Kaggle · 4th place", img: "neural-debris-solution.png",
+    text: "4th place in ESA's Neural Debris Removal competition: un-poisoning a satellite streak detector with distillation-constrained machine unlearning." },
+  { repo: "fedpbc-demo", name: "FedPBC Demo", kind: "Interactive explainer", img: "fedpbc-demo.jpg", live: "https://fedpbc-demo.onrender.com/",
+    text: "A live in-browser walkthrough of FedPBC vs FedAvg: how one small change fixes federated learning when clients keep dropping out." },
+  { repo: "federation-quest", name: "Federation Quest", kind: "Game", img: "federation-quest.jpg", live: "https://federation-quest.onrender.com/",
+    text: "An RPG that teaches a federated-learning paper. Talk to the Oracle, clear quests, and leave understanding arXiv:2404.10091." },
+  { repo: "flpro", name: "FLPro", kind: "Research", img: "flpro.png",
+    text: "Picks federated-learning clients by how fast they improve the model, not by how high their loss is, so noisy-label clients can't fool it." },
+  { repo: "fedbank-india", name: "Anvay", kind: "Website", img: "fedbank-india.jpg",
+    text: "Federated learning pitched to Indian banks: a four-faced cube covering the DPDP and RBI rules, with a live federated-averaging demo." },
+  { repo: "samhita-health", name: "Samhita Health", kind: "Website", img: "samhita-health.jpg", live: "https://samhita-health.onrender.com/",
+    text: "Federated learning for Indian hospitals: train on many hospitals' data while every record stays in place, plus a DPDP compliance hub." },
+  { repo: "doclaw-app", name: "DocLaw", kind: "Mobile app", img: "doclaw-app.png",
+    text: "An offline PDF assistant for doctors and lawyers. It shows the exact text and highlights first, and explains only when asked, all on the device." },
+  { repo: "thinking-outside-the-box", name: "Nukkad AI", kind: "Web app", img: "thinking-outside-the-box.jpg", live: "https://thinking-outside-the-box.onrender.com/",
+    text: "A public AI chat platform that shows you other people exploring the same topics as you, in real time." },
+  { repo: "daily-mind", name: "Daily Mind", kind: "Web app", img: "daily-mind.png",
+    text: "One prompt a day, anonymous public answers, and an AI summary at the end of the day. A companion to Nukkad AI." },
+  { repo: "pokewords", name: "PokéWords", kind: "Game", img: "pokewords.jpg", live: "https://pokewords.onrender.com/",
+    text: "A free, unofficial fan word game: spell Pokémon names with letter tiles, beat the gyms, clear all nine regions." },
+  { repo: "battery-analytics-prototype", name: "Battery Analytics", kind: "Research", img: "battery-analytics-prototype.png",
+    text: "Estimates battery health and remaining life from charging data alone, validated on whole cells, with a fleet dashboard." },
+];
+
+const table = document.getElementById("table");
+
+// jewel tones: sapphire, oxblood, emerald, gold, amethyst, copper, teal, pearl
+const PINS = ["#2c4f9e", "#9b2335", "#1f7a5c", "#c9a24f", "#6a3f8f", "#b5683a", "#1f6f80", "#d9d2c0"];
+
+const cards = projects.map((p, i) => {
+  const card = document.createElement("div");
+  card.className = "card" + (i % 2 ? " red" : "");
+  card.style.setProperty("--pin", PINS[i % PINS.length]);
+  card.tabIndex = 0;
+  card.setAttribute("role", "button");
+  card.setAttribute("aria-pressed", "false");
+  card.setAttribute("aria-label", p.name + ": flip for details");
+  card.innerHTML = `
+    <div class="inner">
+      <div class="face front">
+        <i class="pin"></i>
+        <img src="images/${p.img}" alt="" loading="lazy">
+        <div class="cap"><span>${p.name}</span><em>${p.kind.split(" · ")[0]}</em></div>
+      </div>
+      <div class="face back">
+        <img class="bg" src="images/${p.img}" alt="" loading="lazy">
+        <h2>${p.name}</h2>
+        <div class="kind">${p.kind}</div>
+        <p>${p.text}</p>
+        <div class="links">
+          <a href="${GH + p.repo}" target="_blank" rel="noopener">GitHub ↗</a>
+          ${p.live ? `<a class="ghost" href="${p.live}" target="_blank" rel="noopener">Live site ↗</a>` : ""}
+        </div>
+      </div>
+    </div>`;
+  const links = card.querySelectorAll("a");
+  const setLinks = (on) => links.forEach((a) => (a.tabIndex = on ? 0 : -1));
+  setLinks(false);
+
+  const flip = () => {
+    const on = card.classList.toggle("flipped");
+    card.setAttribute("aria-pressed", String(on));
+    setLinks(on);
+  };
+  card.addEventListener("click", (e) => { if (!e.target.closest("a")) flip(); });
+  card.addEventListener("keydown", (e) => {
+    if ((e.key === "Enter" || e.key === " ") && e.target === card) { e.preventDefault(); flip(); }
+  });
+  table.appendChild(card);
+  return card;
+});
+
+// small seeded random, so a layout stays put across resizes until reshuffled
+function rng(seed) {
+  return () => {
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+let seed = 7;
+
+function scatter() {
+  const rand = rng(seed);
+  const W = table.clientWidth;
+  const w = Math.min(300, W - 24);
+  const h = Math.round(w * 0.72) + 84;
+  const cols = Math.max(1, Math.min(4, Math.floor(W / (w * 0.94))));
+  const cellW = W / cols;
+  const cellH = h * (cols === 1 ? 1.08 : 1.05);
+  const stagger = cols > 1 ? cellH * 0.38 : 0;
+
+  // deal the cards into the cells in a random order
+  const order = cards.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+
+  // A pin may only touch its own card. Cards turn about their pin, so the pin
+  // point is fixed; test it against every other card, both tilted and straight
+  // (a flipped card straightens).
+  const PIN_Y = 15, CLEAR = 14;
+  const covers = (c, px, py, deg) => {
+    const cx = c.x + w / 2, cy = c.y + PIN_Y, a = (-deg * Math.PI) / 180;
+    const dx = px - cx, dy = py - cy;
+    const lx = cx + dx * Math.cos(a) - dy * Math.sin(a);
+    const ly = cy + dx * Math.sin(a) + dy * Math.cos(a);
+    return lx > c.x - CLEAR && lx < c.x + w + CLEAR && ly > c.y - CLEAR && ly < c.y + h + CLEAR;
+  };
+  const pinHit = (a, b) => {
+    const px = a.x + w / 2, py = a.y + PIN_Y;
+    return covers(b, px, py, b.r) || covers(b, px, py, 0);
+  };
+
+  const placed = [];
+  let bottom = 0;
+  order.forEach((ci, slot) => {
+    const col = slot % cols, row = Math.floor(slot / cols);
+    const slack = (cellW - w) / 2;
+    let c;
+    // try scattered spots first, then calm the scatter down until the pins are clear
+    for (let t = 0; t < 90; t++) {
+      const k = t < 45 ? 1 : Math.max(0, 1 - (t - 45) / 40);
+      const jx = (rand() - 0.5) * 2 * Math.min(slack + 14, 46) * k;
+      const jy = (rand() - 0.5) * 44 * k;
+      c = {
+        x: Math.max(0, Math.min(W - w, col * cellW + slack + jx)),
+        y: Math.max(0, row * cellH + (col % 2 ? stagger : 0) + jy + 24),
+        r: (rand() - 0.5) * (cols === 1 ? 8 : 20) * k,
+      };
+      if (placed.every((p) => !pinHit(c, p) && !pinHit(p, c))) break;
+    }
+    placed.push(c);
+    const s = cards[ci].style;
+    s.setProperty("--w", w + "px");
+    s.setProperty("--h", h + "px");
+    s.setProperty("--x", c.x + "px");
+    s.setProperty("--y", c.y + "px");
+    s.setProperty("--r", c.r.toFixed(1) + "deg");
+    s.setProperty("--z", 1 + Math.floor(rand() * 9));
+    bottom = Math.max(bottom, c.y + h);
+  });
+  table.style.height = bottom + 40 + "px";
+}
+
+document.getElementById("shuffle").addEventListener("click", () => {
+  seed = (Math.random() * 1e9) | 0;
+  cards.forEach((c) => {
+    c.classList.remove("flipped");
+    c.setAttribute("aria-pressed", "false");
+    c.querySelectorAll("a").forEach((a) => (a.tabIndex = -1));
+  });
+  scatter();
+});
+
+window.addEventListener("resize", scatter);
+scatter();
+</script>
+</body>
+</html>
