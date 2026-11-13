@@ -96,12 +96,23 @@
     z-index: var(--z);
     transform-origin: 50% 15px;
     translate: var(--x) var(--y); rotate: var(--r);
-    transition: rotate .7s cubic-bezier(.2, .9, .25, 1.15), transform .3s;
+    transition: rotate .7s cubic-bezier(.2, .9, .25, 1.15), transform .3s, width .55s cubic-bezier(.3, .8, .2, 1), height .55s cubic-bezier(.3, .8, .2, 1);
     -webkit-tap-highlight-color: transparent;
   }
-  .dealing .card { transition: translate .7s cubic-bezier(.2, .9, .25, 1.15), rotate .7s cubic-bezier(.2, .9, .25, 1.15), transform .3s; }
-  .card:hover { rotate: calc(var(--r) * .4); transform: translateY(-8px); z-index: 20; }
+  .dealing .card { transition: translate .7s cubic-bezier(.2, .9, .25, 1.15), rotate .7s cubic-bezier(.2, .9, .25, 1.15), transform .3s, width .55s cubic-bezier(.3, .8, .2, 1), height .55s cubic-bezier(.3, .8, .2, 1); }
+  @media (hover: hover) {
+    .card:hover { rotate: calc(var(--r) * .4); transform: translateY(-8px); z-index: 20; }
+  }
   .card.flipped { rotate: 0deg; transform: none; z-index: 30; }
+
+  /* narrow boards: small prints that open up full size when flipped */
+  .mini .card.flipped { width: var(--fw); height: var(--fh); translate: var(--fx) var(--fy); }
+  .mini .front { padding: 26px 8px 0; }
+  .mini .front .cap { height: 30px; font-size: clamp(9.5px, calc(var(--w) * .1), 15px); letter-spacing: -.01em; }
+  .mini .front .cap em { display: none; }
+  .mini .pin, .mini .card.hero .pin { width: 14px; height: 14px; margin-left: -7px; top: 8px; box-shadow: 3px 4px 4px rgba(0, 0, 0, .38), inset -1px -2px 3px rgba(0, 0, 0, .28); }
+  .mini .face { box-shadow: 0 10px 22px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .4); }
+  .mini .card.flipped .face { box-shadow: 0 24px 60px rgba(0, 0, 0, .75), 0 0 0 1px rgba(205, 174, 116, .4); }
 
   .inner {
     position: absolute; inset: 0; transform-style: preserve-3d;
@@ -226,6 +237,12 @@ const table = document.getElementById("table");
 // jewel tones: sapphire, oxblood, emerald, gold, amethyst, copper, teal, pearl
 const PINS = ["#2c4f9e", "#9b2335", "#1f7a5c", "#c9a24f", "#6a3f8f", "#b5683a", "#1f6f80", "#d9d2c0"];
 
+function setFlipped(card, on) {
+  card.classList.toggle("flipped", on);
+  card.setAttribute("aria-pressed", String(on));
+  card.querySelectorAll("a").forEach((a) => (a.tabIndex = on ? 0 : -1));
+}
+
 const cards = projects.map((p, i) => {
   const card = document.createElement("div");
   card.className = "card" + (i % 2 ? " red" : "") + (i ? "" : " hero");
@@ -253,14 +270,19 @@ const cards = projects.map((p, i) => {
         </div>
       </div>
     </div>`;
-  const links = card.querySelectorAll("a");
-  const setLinks = (on) => links.forEach((a) => (a.tabIndex = on ? 0 : -1));
-  setLinks(false);
+  setFlipped(card, false);
 
   const flip = () => {
-    const on = card.classList.toggle("flipped");
-    card.setAttribute("aria-pressed", String(on));
-    setLinks(on);
+    const on = !card.classList.contains("flipped");
+    if (table.classList.contains("mini")) {
+      // small cards open one at a time, full size, in the middle of the screen
+      cards.forEach((c) => c !== card && setFlipped(c, false));
+      const fh = parseFloat(table.style.getPropertyValue("--fh"));
+      const top = window.innerHeight / 2 - table.getBoundingClientRect().top - fh / 2;
+      card.style.setProperty("--fy", clamp(top, 0, table.clientHeight - fh) + "px");
+      deal();
+    }
+    setFlipped(card, on);
   };
   card.addEventListener("click", (e) => { if (!e.target.closest("a")) flip(); });
   card.addEventListener("keydown", (e) => {
@@ -284,6 +306,8 @@ let seed = 7;
 
 const PIN_Y = 15, CLEAR = 14;
 const heightFor = (w) => Math.round(w * 0.72) + 84;
+const miniHeightFor = (w) => Math.round((w - 16) * 0.75) + 56; // thinner border, shorter caption
+const MINI_BELOW = 800; // board width under which the ring uses small cards
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 // A pin may only touch its own card. Cards turn about their pin, so the pin
@@ -296,12 +320,6 @@ function covers(c, px, py, deg) {
   const ly = cy + dx * Math.sin(a) + dy * Math.cos(a);
   return lx > c.x - CLEAR && lx < c.x + c.w + CLEAR && ly > c.y - CLEAR && ly < c.y + c.h + CLEAR;
 }
-function pinHit(a, b) {
-  const px = a.x + a.w / 2, py = a.y + PIN_Y;
-  return covers(b, px, py, b.r) || covers(b, px, py, 0);
-}
-const pinsClear = (c, placed) => placed.every((p) => !pinHit(c, p) && !pinHit(p, c));
-
 // Wide boards: the first project sits in the centre and the rest orbit it.
 const TILT = 7;          // most a ring card leans, in degrees
 const LAP_SECONDS = 110; // one full trip round the board
@@ -347,9 +365,12 @@ function orbitClear(path, n, hero, w, h) {
   return true;
 }
 function ring(W, n) {
-  const w = clamp(W * 0.2, 230, 260), h = heightFor(w);
-  const wc = Math.round(w * 1.25), hc = heightFor(wc);
-  const a = (W - w) / 2 - 16, cx = W / 2;
+  const mini = W < MINI_BELOW;
+  const sizeH = mini ? miniHeightFor : heightFor;
+  const w = mini ? clamp(W * 0.29, 84, 190) : clamp(W * 0.2, 230, 260), h = sizeH(w);
+  const a = (W - w) / 2 - (mini ? 8 : 16), cx = W / 2;
+  // the centre card is a little larger, as far as the gap inside the ring allows
+  const wc = Math.round(Math.min(w * (mini ? 1.2 : 1.25), 2 * (a - 10) - w)), hc = sizeH(wc);
   let b = (h + hc) / 2 + 24, hero, path;
   // stretch the oval until the pins stay clear all the way round
   for (let attempt = 0; attempt < 80; attempt++, b += 16) {
@@ -361,34 +382,7 @@ function ring(W, n) {
   return { hero, path, w, h, height: 2 * b + h + 34 };
 }
 
-// Narrow screens have no room for a ring: the first project leads, the rest scatter below.
-function column(rand, W, n) {
-  const w = Math.min(300, W - 24), h = heightFor(w);
-  const cols = Math.max(1, Math.floor(W / (w * 0.94)));
-  const cellW = W / cols;
-  const cellH = h * (cols === 1 ? 1.08 : 1.05);
-  const stagger = cols > 1 ? cellH * 0.38 : 0;
-  const top = h + 70;
-  const out = [{ x: (W - w) / 2, y: 24, w, h, r: (rand() - 0.5) * 4 }];
-  for (let slot = 0; slot < n; slot++) {
-    const col = slot % cols, row = Math.floor(slot / cols);
-    const slack = (cellW - w) / 2;
-    let c;
-    for (let t = 0; t < 90; t++) {
-      const k = t < 45 ? 1 : Math.max(0, 1 - (t - 45) / 40);
-      c = {
-        x: clamp(col * cellW + slack + (rand() - 0.5) * 2 * Math.min(slack + 14, 46) * k, 0, W - w),
-        y: top + row * cellH + (col % 2 ? stagger : 0) + (rand() - 0.5) * 44 * k,
-        w, h, r: (rand() - 0.5) * (cols === 1 ? 8 : 20) * k,
-      };
-      if (pinsClear(c, out)) break;
-    }
-    out.push(c);
-  }
-  return out;
-}
-
-let orbit = null; // { path, items: [{ card, at, w, h }] } on wide boards, else null
+let orbit = null; // { path, items: [{ card, at, w, h }] }
 let lap = 0;      // how far round the orbit has turned, 0 to 1
 
 function placeOrbit() {
@@ -408,15 +402,18 @@ function setCard(card, c, z) {
   s.setProperty("--z", z);
 }
 
+// let the cards glide to their new places, then hand them back to the orbit
 let dealTimer;
-function scatter() {
-  const rand = rng(seed);
-  const W = table.clientWidth;
-
-  // let the cards glide to their new places, then hand them back to the orbit
+function deal() {
   table.classList.add("dealing");
   clearTimeout(dealTimer);
   dealTimer = setTimeout(() => table.classList.remove("dealing"), 800);
+}
+
+function scatter() {
+  const rand = rng(seed);
+  const W = table.clientWidth;
+  deal();
 
   // the centre card stays put; the others are dealt in a random order
   const order = cards.slice(1);
@@ -426,39 +423,37 @@ function scatter() {
   }
   const n = order.length;
 
-  if (W >= 800) {
-    const R = ring(W, n);
-    setCard(cards[0], { ...R.hero, r: (rand() - 0.5) * 4 }, 10);
-    orbit = {
-      path: R.path,
-      items: order.map((card, j) => {
-        setCard(card, { w: R.w, h: R.h, r: (rand() - 0.5) * 2 * TILT }, 1 + Math.floor(rand() * 9));
-        return { card, at: j / n, w: R.w, h: R.h };
-      }),
-    };
-    placeOrbit();
-    table.style.height = R.height + 40 + "px";
-    return;
-  }
+  // on narrow boards the cards are small, and grow to this size when flipped
+  table.classList.toggle("mini", W < MINI_BELOW);
+  const fw = Math.min(300, W - 16);
+  table.style.setProperty("--fw", fw + "px");
+  table.style.setProperty("--fh", heightFor(fw) + "px");
+  table.style.setProperty("--fx", (W - fw) / 2 + "px");
 
-  orbit = null;
-  const spots = column(rand, W, n);
-  let bottom = 0;
-  [cards[0], ...order].forEach((card, i) => {
-    setCard(card, spots[i], i ? 1 + Math.floor(rand() * 9) : 10);
-    bottom = Math.max(bottom, spots[i].y + spots[i].h);
-  });
-  table.style.height = bottom + 40 + "px";
+  const R = ring(W, n);
+  setCard(cards[0], { ...R.hero, r: (rand() - 0.5) * 4 }, 10);
+  orbit = {
+    path: R.path,
+    items: order.map((card, j) => {
+      setCard(card, { w: R.w, h: R.h, r: (rand() - 0.5) * 2 * TILT }, 1 + Math.floor(rand() * 9));
+      return { card, at: j / n, w: R.w, h: R.h };
+    }),
+  };
+  placeOrbit();
+  table.style.height = R.height + 40 + "px";
 }
 
 // The orbit rests while a card is being read (flipped), pointed at, or dealt.
 const stillPlease = window.matchMedia("(prefers-reduced-motion: reduce)");
+// a touch screen keeps reporting :hover after a tap, so only a real pointer counts
+const resting = window.matchMedia("(hover: hover)").matches
+  ? ".card.flipped, .card:hover, .card:focus-visible"
+  : ".card.flipped, .card:focus-visible";
 let lastTick = 0;
 function tick(now) {
   const dt = Math.min(100, now - lastTick);
   lastTick = now;
-  if (orbit && !stillPlease.matches && !table.classList.contains("dealing") &&
-      !table.querySelector(".card.flipped, .card:hover, .card:focus-visible")) {
+  if (orbit && !stillPlease.matches && !table.classList.contains("dealing") && !table.querySelector(resting)) {
     lap = (lap + dt / (LAP_SECONDS * 1000)) % 1;
     placeOrbit();
   }
@@ -468,15 +463,17 @@ requestAnimationFrame(tick);
 
 document.getElementById("shuffle").addEventListener("click", () => {
   seed = (Math.random() * 1e9) | 0;
-  cards.forEach((c) => {
-    c.classList.remove("flipped");
-    c.setAttribute("aria-pressed", "false");
-    c.querySelectorAll("a").forEach((a) => (a.tabIndex = -1));
-  });
+  cards.forEach((c) => setFlipped(c, false));
   scatter();
 });
 
-window.addEventListener("resize", scatter);
+// phones fire resize when the address bar slides away; only a width change needs a new layout
+let lastWidth = table.clientWidth;
+window.addEventListener("resize", () => {
+  if (table.clientWidth === lastWidth) return;
+  lastWidth = table.clientWidth;
+  scatter();
+});
 scatter();
 </script>
 </body>
