@@ -6,7 +6,7 @@ const path = require("path");
 const shots = [
   ["fedpbc-demo", "https://fedpbc-demo.onrender.com/"],
   ["federation-quest", "https://federation-quest.onrender.com/"],
-  ["thinking-outside-the-box", "https://thinking-outside-the-box.onrender.com/"],
+  ["thinking-outside-the-box", "https://nukkadai.onrender.com/"],
   ["samhita-health", "https://samhita-health.onrender.com/"],
   ["pokewords", "https://pokewords.onrender.com/"],
   ["daily-mind", "https://daily-mind.onrender.com/"],
