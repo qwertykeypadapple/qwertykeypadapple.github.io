@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>qwertykeypadapple · Projects</title>
 <meta name="description" content="Everything I've built, scattered on one table. Tap a photo to flip it.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -94,12 +95,13 @@
     cursor: pointer; perspective: 1200px;
     z-index: var(--z);
     transform-origin: 50% 15px;
-    transform: translate(var(--x), var(--y)) rotate(var(--r));
-    transition: transform .7s cubic-bezier(.2, .9, .25, 1.15);
+    translate: var(--x) var(--y); rotate: var(--r);
+    transition: rotate .7s cubic-bezier(.2, .9, .25, 1.15), transform .3s;
     -webkit-tap-highlight-color: transparent;
   }
-  .card:hover { transform: translate(var(--x), calc(var(--y) - 8px)) rotate(calc(var(--r) * .4)); z-index: 20; }
-  .card.flipped { transform: translate(var(--x), var(--y)) rotate(0deg); z-index: 30; }
+  .dealing .card { transition: translate .7s cubic-bezier(.2, .9, .25, 1.15), rotate .7s cubic-bezier(.2, .9, .25, 1.15), transform .3s; }
+  .card:hover { rotate: calc(var(--r) * .4); transform: translateY(-8px); z-index: 20; }
+  .card.flipped { rotate: 0deg; transform: none; z-index: 30; }
 
   .inner {
     position: absolute; inset: 0; transform-style: preserve-3d;
@@ -180,7 +182,7 @@
 <header>
   <div class="eyebrow"><b></b>qwertykeypadapple · Selected work<b></b></div>
   <h1>Things I've <span class="b">built</span><span class="r">.</span></h1>
-  <p class="lede">Every project is a photo pinned to the board, circling the one in the middle. Tap one to flip it over and read what it is.</p>
+  <p class="lede">Every project is a photo pinned to the board, slowly circling the one in the middle. Tap one to flip it over and read what it is.</p>
   <button class="shuffle" id="shuffle" type="button">Scatter them again</button>
 </header>
 
@@ -300,49 +302,63 @@ function pinHit(a, b) {
 }
 const pinsClear = (c, placed) => placed.every((p) => !pinHit(c, p) && !pinHit(p, c));
 
-// Wide boards: the first project sits in the centre and the rest circle it.
-function ring(rand, W, n) {
-  const wr = clamp(W * 0.2, 230, 260), hr = heightFor(wr);
-  const wc = Math.round(wr * 1.25), hc = heightFor(wc);
-  const a = (W - wr) / 2 - 16;
-  const perimeter = (b) => Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
-  let b = (hr + hc) / 2 + 24;
-  while (perimeter(b) < n * wr * 0.95) b += 12;
+// Wide boards: the first project sits in the centre and the rest orbit it.
+const TILT = 7;          // most a ring card leans, in degrees
+const LAP_SECONDS = 110; // one full trip round the board
 
-  let out;
-  // widen the oval until every pin is clear
-  for (let attempt = 0; attempt < 40; attempt++, b += 20) {
-    const cx = W / 2, cy = b + hr / 2 + 34;
-    out = [{ x: cx - wc / 2, y: cy - hc / 2, w: wc, h: hc, r: (rand() - 0.5) * 4 }];
-
-    // points evenly spaced along the oval, by distance rather than by angle
-    const N = 720, pts = [], cum = [0];
-    for (let i = 0; i < N; i++) {
-      const t = (2 * Math.PI * i) / N;
-      pts.push([cx + a * Math.cos(t), cy + b * Math.sin(t)]);
-      if (i) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
-    }
-    const total = cum[N - 1] + Math.hypot(pts[0][0] - pts[N - 1][0], pts[0][1] - pts[N - 1][1]);
-    const start = rand() * total;
-
-    let ok = true;
-    for (let j = 0; j < n && ok; j++) {
-      const target = (start + (j * total) / n) % total;
-      const [px, py] = pts[Math.max(0, cum.findIndex((d) => d >= target))];
-      ok = false;
-      for (let t = 0; t < 60 && !ok; t++) {
-        const k = t < 30 ? 1 : Math.max(0, 1 - (t - 30) / 25);
-        const c = {
-          x: clamp(px - wr / 2 + (rand() - 0.5) * 26 * k, 0, W - wr),
-          y: py - hr / 2 + (rand() - 0.5) * 26 * k,
-          w: wr, h: hr, r: (rand() - 0.5) * 18 * k,
-        };
-        if (pinsClear(c, out)) { out.push(c); ok = true; }
-      }
-    }
-    if (ok) break;
+// An oval as points evenly spaced by distance, so cards keep even gaps as they travel.
+function ovalPath(cx, cy, a, b) {
+  const N = 1440, raw = [], cum = [0];
+  for (let i = 0; i <= N; i++) {
+    const t = (2 * Math.PI * i) / N - Math.PI / 2;
+    raw.push([cx + a * Math.cos(t), cy + b * Math.sin(t)]);
+    if (i) cum.push(cum[i - 1] + Math.hypot(raw[i][0] - raw[i - 1][0], raw[i][1] - raw[i - 1][1]));
   }
-  return out;
+  const total = cum[N], pts = [];
+  for (let m = 0, i = 0; m < N; m++) {
+    const target = (m * total) / N;
+    while (cum[i + 1] < target) i++;
+    const t = (target - cum[i]) / (cum[i + 1] - cum[i]);
+    pts.push([raw[i][0] + (raw[i + 1][0] - raw[i][0]) * t, raw[i][1] + (raw[i + 1][1] - raw[i][1]) * t]);
+  }
+  return { pts, total };
+}
+// where a card is after travelling `frac` of a lap (0 to 1)
+function pointAt(path, frac) {
+  const n = path.pts.length, f = (((frac % 1) + 1) % 1) * n;
+  const i = Math.floor(f) % n, t = f - Math.floor(f);
+  const p = path.pts[i], q = path.pts[(i + 1) % n];
+  return [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
+}
+// true when no pin touches a second card at any moment of the orbit, whatever the lean
+function orbitClear(path, n, hero, w, h) {
+  for (let q = 0; q < 48; q++) {
+    const all = [hero];
+    for (let j = 0; j < n; j++) {
+      const [px, py] = pointAt(path, (j + q / 48) / n);
+      all.push({ x: px - w / 2, y: py - h / 2, w, h });
+    }
+    for (const a of all) for (const b of all) {
+      if (a === b) continue;
+      const px = a.x + a.w / 2, py = a.y + PIN_Y;
+      if (covers(b, px, py, TILT) || covers(b, px, py, -TILT) || covers(b, px, py, 0)) return false;
+    }
+  }
+  return true;
+}
+function ring(W, n) {
+  const w = clamp(W * 0.2, 230, 260), h = heightFor(w);
+  const wc = Math.round(w * 1.25), hc = heightFor(wc);
+  const a = (W - w) / 2 - 16, cx = W / 2;
+  let b = (h + hc) / 2 + 24, hero, path;
+  // stretch the oval until the pins stay clear all the way round
+  for (let attempt = 0; attempt < 80; attempt++, b += 16) {
+    const cy = b + h / 2 + 34;
+    hero = { x: cx - wc / 2, y: cy - hc / 2, w: wc, h: hc };
+    path = ovalPath(cx, cy, a, b);
+    if (orbitClear(path, n, hero, w, h)) break;
+  }
+  return { hero, path, w, h, height: 2 * b + h + 34 };
 }
 
 // Narrow screens have no room for a ring: the first project leads, the rest scatter below.
@@ -372,9 +388,35 @@ function column(rand, W, n) {
   return out;
 }
 
+let orbit = null; // { path, items: [{ card, at, w, h }] } on wide boards, else null
+let lap = 0;      // how far round the orbit has turned, 0 to 1
+
+function placeOrbit() {
+  for (const it of orbit.items) {
+    const [px, py] = pointAt(orbit.path, it.at + lap);
+    it.card.style.setProperty("--x", px - it.w / 2 + "px");
+    it.card.style.setProperty("--y", py - it.h / 2 + "px");
+  }
+}
+
+function setCard(card, c, z) {
+  const s = card.style;
+  s.setProperty("--w", c.w + "px");
+  s.setProperty("--h", c.h + "px");
+  if (c.x !== undefined) { s.setProperty("--x", c.x + "px"); s.setProperty("--y", c.y + "px"); }
+  s.setProperty("--r", c.r.toFixed(1) + "deg");
+  s.setProperty("--z", z);
+}
+
+let dealTimer;
 function scatter() {
   const rand = rng(seed);
   const W = table.clientWidth;
+
+  // let the cards glide to their new places, then hand them back to the orbit
+  table.classList.add("dealing");
+  clearTimeout(dealTimer);
+  dealTimer = setTimeout(() => table.classList.remove("dealing"), 800);
 
   // the centre card stays put; the others are dealt in a random order
   const order = cards.slice(1);
@@ -382,22 +424,47 @@ function scatter() {
     const j = Math.floor(rand() * (i + 1));
     [order[i], order[j]] = [order[j], order[i]];
   }
-  order.unshift(cards[0]);
+  const n = order.length;
 
-  const spots = (W >= 800 ? ring : column)(rand, W, order.length - 1);
+  if (W >= 800) {
+    const R = ring(W, n);
+    setCard(cards[0], { ...R.hero, r: (rand() - 0.5) * 4 }, 10);
+    orbit = {
+      path: R.path,
+      items: order.map((card, j) => {
+        setCard(card, { w: R.w, h: R.h, r: (rand() - 0.5) * 2 * TILT }, 1 + Math.floor(rand() * 9));
+        return { card, at: j / n, w: R.w, h: R.h };
+      }),
+    };
+    placeOrbit();
+    table.style.height = R.height + 40 + "px";
+    return;
+  }
+
+  orbit = null;
+  const spots = column(rand, W, n);
   let bottom = 0;
-  spots.forEach((c, i) => {
-    const s = order[i].style;
-    s.setProperty("--w", c.w + "px");
-    s.setProperty("--h", c.h + "px");
-    s.setProperty("--x", c.x + "px");
-    s.setProperty("--y", c.y + "px");
-    s.setProperty("--r", c.r.toFixed(1) + "deg");
-    s.setProperty("--z", i ? 1 + Math.floor(rand() * 9) : 10);
-    bottom = Math.max(bottom, c.y + c.h);
+  [cards[0], ...order].forEach((card, i) => {
+    setCard(card, spots[i], i ? 1 + Math.floor(rand() * 9) : 10);
+    bottom = Math.max(bottom, spots[i].y + spots[i].h);
   });
   table.style.height = bottom + 40 + "px";
 }
+
+// The orbit rests while a card is being read (flipped), pointed at, or dealt.
+const stillPlease = window.matchMedia("(prefers-reduced-motion: reduce)");
+let lastTick = 0;
+function tick(now) {
+  const dt = Math.min(100, now - lastTick);
+  lastTick = now;
+  if (orbit && !stillPlease.matches && !table.classList.contains("dealing") &&
+      !table.querySelector(".card.flipped, .card:hover, .card:focus-visible")) {
+    lap = (lap + dt / (LAP_SECONDS * 1000)) % 1;
+    placeOrbit();
+  }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
 
 document.getElementById("shuffle").addEventListener("click", () => {
   seed = (Math.random() * 1e9) | 0;
