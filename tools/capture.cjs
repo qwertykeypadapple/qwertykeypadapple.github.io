@@ -9,6 +9,7 @@ const shots = [
   ["thinking-outside-the-box", "https://nukkadai.onrender.com/"],
   ["investor-connect", "https://investor-connect-051f.onrender.com/"],
   ["samhita-health", "https://samhita-health.onrender.com/"],
+  ["logic-bench", "https://logic-bench.onrender.com/"],
   ["pokewords", "https://pokewords.onrender.com/"],
   ["daily-mind", "https://daily-mind.onrender.com/"],
   ["fedbank-india", process.env.FEDBANK_URL || "http://127.0.0.1:5186/"],
