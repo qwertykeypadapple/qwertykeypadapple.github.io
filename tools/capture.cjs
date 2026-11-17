@@ -10,6 +10,7 @@ const shots = [
   ["investor-connect", "https://investor-connect-051f.onrender.com/"],
   ["samhita-health", "https://samhita-health.onrender.com/"],
   ["fedmse-arcade", "https://qwertykeypadapple.github.io/fedmse-arcade/"],
+  ["flpro", "https://qwertykeypadapple.github.io/flprogress-explained/"],
   ["logic-bench", "https://logic-bench.onrender.com/"],
   ["pokewords", "https://pokewords.onrender.com/"],
   ["daily-mind", "https://daily-mind.onrender.com/"],
