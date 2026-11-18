@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>qwertykeypadapple · Projects</title>
 <meta name="description" content="Easy questions on a notice board. Flip one to find the project that answers it.">
+<script>try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}</script>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,6 +24,42 @@
     --muted: #9c9aa6;
     --serif: "Fraunces", Georgia, serif;
     --sans: "Inter", system-ui, sans-serif;
+
+    /* page theme: light by default */
+    --bg: #f4efe4;
+    --fg: #18203a;
+    --fg-muted: #6a6676;
+    --accent: #9a7636;
+    --accent-soft: #8a6526;
+    --glow-1: #c9d5f1; --glow-2: #f1cfd3; --glow-3: #dbe4f4; --glow-op: .6;
+    --vignette: rgba(244, 239, 228, .55);
+    --board-tint: linear-gradient(160deg, #ebe3d1, #e4dac5 55%, #ecdcd4);
+    --board-ring: #6b5338;
+    --board-depth: 0 30px 60px rgba(70, 50, 25, .2), inset 0 0 50px rgba(90, 65, 30, .14);
+    --veil: rgba(244, 239, 228, .7);
+    --shadow: 0 16px 30px rgba(60, 40, 20, .22), 0 2px 5px rgba(60, 40, 20, .18);
+    --shadow-mini: 0 8px 16px rgba(60, 40, 20, .22), 0 1px 3px rgba(60, 40, 20, .2);
+    --shadow-hero: 0 22px 44px rgba(60, 40, 20, .28), 0 2px 6px rgba(60, 40, 20, .2);
+    --shadow-open: 0 24px 60px rgba(60, 40, 20, .35);
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --bg: #090c16;
+    --fg: #f3ede0;
+    --fg-muted: #9c9aa6;
+    --accent: #cdae74;
+    --accent-soft: #e6d3a8;
+    --glow-1: #1c3470; --glow-2: #6a1626; --glow-3: #14244c; --glow-op: .5;
+    --vignette: rgba(9, 12, 22, .8);
+    --board-tint: linear-gradient(160deg, rgba(34, 53, 95, .34), rgba(16, 22, 40, .5) 55%, rgba(72, 16, 26, .3));
+    --board-ring: #17120f;
+    --board-depth: 0 40px 80px rgba(0, 0, 0, .55), inset 0 0 60px rgba(0, 0, 0, .5);
+    --veil: rgba(5, 7, 14, .72);
+    --shadow: 0 24px 50px rgba(0, 0, 0, .55), 0 2px 6px rgba(0, 0, 0, .4);
+    --shadow-mini: 0 10px 22px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .4);
+    --shadow-hero: 0 30px 70px rgba(0, 0, 0, .65), 0 2px 6px rgba(0, 0, 0, .4);
+    --shadow-open: 0 24px 60px rgba(0, 0, 0, .75);
+    color-scheme: dark;
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
@@ -30,23 +67,24 @@
     margin: 0;
     min-height: 100vh;
     font-family: var(--sans);
-    color: var(--text);
-    background: var(--ink);
+    color: var(--fg);
+    background: var(--bg);
     overflow-x: hidden;
+    transition: background-color .4s, color .4s;
   }
 
   /* quiet sapphire and oxblood light behind the table */
   .glow { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
   .glow i {
-    position: absolute; border-radius: 50%; filter: blur(110px); opacity: .5;
+    position: absolute; border-radius: 50%; filter: blur(110px); opacity: var(--glow-op);
     animation: drift 26s ease-in-out infinite alternate;
   }
-  .glow i:nth-child(1) { width: 56vmax; height: 56vmax; left: -22vmax; top: -24vmax; background: #1c3470; }
-  .glow i:nth-child(2) { width: 46vmax; height: 46vmax; right: -18vmax; top: 22vh; background: #6a1626; animation-delay: -9s; }
-  .glow i:nth-child(3) { width: 40vmax; height: 40vmax; left: 16vw; bottom: -26vmax; background: #14244c; animation-delay: -15s; }
+  .glow i:nth-child(1) { width: 56vmax; height: 56vmax; left: -22vmax; top: -24vmax; background: var(--glow-1); }
+  .glow i:nth-child(2) { width: 46vmax; height: 46vmax; right: -18vmax; top: 22vh; background: var(--glow-2); animation-delay: -9s; }
+  .glow i:nth-child(3) { width: 40vmax; height: 40vmax; left: 16vw; bottom: -26vmax; background: var(--glow-3); animation-delay: -15s; }
   .glow::after {
     content: ""; position: absolute; inset: 0;
-    background: radial-gradient(circle at 50% 35%, transparent 0, rgba(9, 12, 22, .8) 80%);
+    background: radial-gradient(circle at 50% 35%, transparent 0, var(--vignette) 80%);
   }
   @keyframes drift { to { transform: translate(5vmax, 3vmax) scale(1.1); } }
 
@@ -55,25 +93,25 @@
   header { text-align: center; padding: 72px 20px 12px; }
   .eyebrow {
     display: inline-flex; gap: 14px; align-items: center;
-    font-size: 12px; font-weight: 500; letter-spacing: .32em; text-transform: uppercase; color: var(--gold);
+    font-size: 12px; font-weight: 500; letter-spacing: .32em; text-transform: uppercase; color: var(--accent);
   }
-  .eyebrow b { width: 34px; height: 1px; background: var(--gold); opacity: .6; }
+  .eyebrow b { width: 34px; height: 1px; background: var(--accent); opacity: .6; }
   h1 {
     margin: 22px 0 14px;
     font-family: var(--serif); font-weight: 400;
     font-size: clamp(44px, 8.4vw, 92px); line-height: 1; letter-spacing: -.02em;
   }
-  h1 .b { font-style: italic; color: var(--gold-soft); }
+  h1 .b { font-style: italic; color: var(--accent-soft); }
   h1 .r { color: #b8384b; }
-  .lede { margin: 0 auto; max-width: 480px; color: var(--muted); font-size: 16px; line-height: 1.6; }
+  .lede { margin: 0 auto; max-width: 480px; color: var(--fg-muted); font-size: 16px; line-height: 1.6; }
   .shuffle {
     margin-top: 26px; padding: 12px 26px; border-radius: 999px; cursor: pointer;
-    font: 500 13px var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--gold-soft);
-    border: 1px solid rgba(205, 174, 116, .5); background: rgba(205, 174, 116, .06);
+    font: 500 13px var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--accent-soft);
+    border: 1px solid rgba(205, 174, 116, .6); background: rgba(205, 174, 116, .06);
     transition: background .25s, color .25s, border-color .25s;
   }
-  .shuffle:hover { background: var(--gold); border-color: var(--gold); color: var(--ink); }
-  .shuffle:focus-visible, .card:focus-visible, .back a:focus-visible { outline: 2px solid var(--gold-soft); outline-offset: 4px; }
+  .shuffle:hover { background: var(--gold); border-color: var(--gold); color: #090c16; }
+  .shuffle:focus-visible, .theme:focus-visible, .card:focus-visible, .back a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 
   /* the table the photos are thrown onto */
   main { padding: 34px 16px 40px; }
@@ -81,9 +119,9 @@
     max-width: 1320px; margin: 0 auto; padding: 26px 20px; border-radius: 6px;
     background:
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
-      linear-gradient(160deg, rgba(34, 53, 95, .34), rgba(16, 22, 40, .5) 55%, rgba(72, 16, 26, .3));
+      var(--board-tint);
     border: 1px solid rgba(205, 174, 116, .45);
-    box-shadow: 0 0 0 9px #17120f, 0 0 0 10px rgba(205, 174, 116, .3), 0 40px 80px rgba(0, 0, 0, .55), inset 0 0 60px rgba(0, 0, 0, .5);
+    box-shadow: 0 0 0 9px var(--board-ring), 0 0 0 10px rgba(205, 174, 116, .35), var(--board-depth);
   }
   @media (max-width: 600px) { .board { padding: 18px 6px; } }
   /* three rows of prints drifting past, alternate rows in opposite directions */
@@ -124,17 +162,17 @@
   .mini .front .hint { padding-left: 12px; font-size: 9.5px; gap: 5px; }
   .mini .front .hint::before { width: 5px; height: 5px; }
   .mini .pin { width: 14px; height: 14px; margin-left: -7px; top: 6px; box-shadow: 3px 4px 4px rgba(0, 0, 0, .38), inset -1px -2px 3px rgba(0, 0, 0, .28); }
-  .mini .face { box-shadow: 0 10px 22px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .4); }
-  .mini .front { box-shadow: inset 0 4px 0 var(--dc), 0 10px 22px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .4); }
+  .mini .face { box-shadow: var(--shadow-mini); }
+  .mini .front { box-shadow: inset 0 4px 0 var(--dc), var(--shadow-mini); }
   .viewer {
     position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px;
-    background: rgba(5, 7, 14, .72); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    background: var(--veil); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
     opacity: 0; transition: opacity .3s;
   }
   .viewer[hidden] { display: none; }
   .viewer.open { opacity: 1; }
   .viewer .card { rotate: 0deg; }
-  .viewer .face { box-shadow: 0 24px 60px rgba(0, 0, 0, .75), 0 0 0 1px rgba(205, 174, 116, .4); }
+  .viewer .face { box-shadow: var(--shadow-open), 0 0 0 1px rgba(205, 174, 116, .4); }
 
   .inner {
     position: absolute; inset: 0; transform-style: preserve-3d;
@@ -145,7 +183,7 @@
   .face {
     position: absolute; inset: 0; border-radius: 4px; overflow: hidden;
     backface-visibility: hidden; -webkit-backface-visibility: hidden;
-    box-shadow: 0 24px 50px rgba(0, 0, 0, .55), 0 2px 6px rgba(0, 0, 0, .4);
+    box-shadow: var(--shadow);
   }
 
   /* front: a question on a ruled index card */
@@ -155,7 +193,7 @@
       linear-gradient(90deg, transparent 0 22px, color-mix(in srgb, var(--dc) 45%, transparent) 22px 23px, transparent 23px),
       repeating-linear-gradient(180deg, transparent 0 25px, color-mix(in srgb, var(--dc) 17%, transparent) 25px 26px),
       color-mix(in srgb, var(--dc) 11%, var(--paper));
-    box-shadow: inset 0 5px 0 var(--dc), 0 24px 50px rgba(0, 0, 0, .55), 0 2px 6px rgba(0, 0, 0, .4);
+    box-shadow: inset 0 5px 0 var(--dc), var(--shadow);
     background-position: 0 0, 0 30px, 0 0;
   }
   .front .qn { display: flex; justify-content: space-between; gap: 8px; font: 600 10px var(--sans); letter-spacing: .2em; text-transform: uppercase; color: #a3967b; padding-left: 14px; }
@@ -200,20 +238,32 @@
   .back .lock { font-size: 9.5px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
   .viewer .back h2 { font-size: 24px; }
   .viewer .back p { font-size: 14px; }
-  .card.hero .face { box-shadow: 0 30px 70px rgba(0, 0, 0, .65), 0 0 0 1px rgba(205, 174, 116, .55), 0 2px 6px rgba(0, 0, 0, .4); }
+  .card.hero .face { box-shadow: var(--shadow-hero), 0 0 0 1px rgba(205, 174, 116, .55); }
+  .card.hero .front { box-shadow: inset 0 5px 0 var(--dc), var(--shadow-hero), 0 0 0 1px rgba(205, 174, 116, .55); }
+  .mini .card.hero .front { box-shadow: inset 0 4px 0 var(--dc), var(--shadow-mini), 0 0 0 1px rgba(205, 174, 116, .55); }
   .card.hero .pin { width: 22px; height: 22px; margin-left: -11px; top: 4px; }
   .mini .card.hero .pin { width: 16px; height: 16px; margin-left: -8px; top: 5px; }
   .back a:hover { transform: translateY(-2px); }
 
+  .theme {
+    position: fixed; top: 16px; right: 16px; z-index: 40; width: 42px; height: 42px; border-radius: 50%;
+    display: grid; place-items: center; cursor: pointer; color: var(--accent-soft);
+    border: 1px solid rgba(205, 174, 116, .6); background: color-mix(in srgb, var(--bg) 80%, transparent);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); transition: background .25s, color .25s;
+  }
+  .theme:hover { background: var(--gold); color: #090c16; }
+  .theme svg { width: 19px; height: 19px; }
+  .theme .sun, :root[data-theme="dark"] .theme .moon { display: none; }
+  :root[data-theme="dark"] .theme .sun { display: block; }
   .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 0 auto 22px; max-width: 900px; padding: 0 12px; }
-  .legend span { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; letter-spacing: .06em; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; letter-spacing: .06em; color: var(--fg-muted); }
   .legend i { width: 12px; height: 12px; border-radius: 3px; background: var(--dc); box-shadow: 0 0 0 1px rgba(255, 255, 255, .15); }
   .decks { max-width: 1352px; margin: 0 auto; padding: 28px 16px 40px; text-align: center; }
   .decks .board { text-align: left; }
   .decks > h2 { margin: 18px 0 8px; font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
-  .decks > p { margin: 0 auto 28px; max-width: 460px; color: var(--muted); font-size: 15px; line-height: 1.6; }
-  footer { text-align: center; padding: 10px 20px 52px; color: var(--muted); font-size: 13px; letter-spacing: .02em; }
-  footer a { color: var(--gold-soft); text-underline-offset: 3px; }
+  .decks > p { margin: 0 auto 28px; max-width: 460px; color: var(--fg-muted); font-size: 15px; line-height: 1.6; }
+  footer { text-align: center; padding: 10px 20px 52px; color: var(--fg-muted); font-size: 13px; letter-spacing: .02em; }
+  footer a { color: var(--accent-soft); text-underline-offset: 3px; }
 
   @media (prefers-reduced-motion: reduce) {
     .glow i { animation: none; }
@@ -226,6 +276,10 @@
 </head>
 <body>
 <div class="glow" aria-hidden="true"><i></i><i></i><i></i></div>
+<button class="theme" id="theme" type="button" aria-label="Switch to dark mode">
+  <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>
+  <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+</button>
 
 <header>
   <div class="eyebrow"><b></b>qwertykeypadapple · Selected work<b></b></div>
@@ -522,6 +576,20 @@ window.addEventListener("resize", () => {
   build();
 });
 build();
+
+// light by default; the choice is remembered on this device
+const themeBtn = document.getElementById("theme");
+function syncThemeLabel() {
+  const dark = document.documentElement.dataset.theme === "dark";
+  themeBtn.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+}
+themeBtn.addEventListener("click", () => {
+  const dark = document.documentElement.dataset.theme !== "dark";
+  if (dark) document.documentElement.dataset.theme = "dark"; else delete document.documentElement.dataset.theme;
+  try { localStorage.setItem("theme", dark ? "dark" : "light"); } catch (e) {}
+  syncThemeLabel();
+});
+syncThemeLabel();
 </script>
 </body>
 </html>
