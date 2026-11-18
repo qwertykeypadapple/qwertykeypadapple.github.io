@@ -125,6 +125,7 @@
   .mini .front .hint::before { width: 5px; height: 5px; }
   .mini .pin { width: 14px; height: 14px; margin-left: -7px; top: 6px; box-shadow: 3px 4px 4px rgba(0, 0, 0, .38), inset -1px -2px 3px rgba(0, 0, 0, .28); }
   .mini .face { box-shadow: 0 10px 22px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .4); }
+  .mini .front { box-shadow: inset 0 4px 0 var(--dc), 0 10px 22px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .4); }
   .viewer {
     position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px;
     background: rgba(5, 7, 14, .72); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
@@ -151,22 +152,22 @@
   .front {
     padding: 34px 16px 14px; display: flex; flex-direction: column; color: #1a2038;
     background:
-      linear-gradient(90deg, transparent 0 22px, rgba(155, 35, 53, .28) 22px 23px, transparent 23px),
-      repeating-linear-gradient(180deg, transparent 0 25px, rgba(44, 79, 158, .13) 25px 26px),
-      var(--paper);
+      linear-gradient(90deg, transparent 0 22px, color-mix(in srgb, var(--dc) 45%, transparent) 22px 23px, transparent 23px),
+      repeating-linear-gradient(180deg, transparent 0 25px, color-mix(in srgb, var(--dc) 17%, transparent) 25px 26px),
+      color-mix(in srgb, var(--dc) 11%, var(--paper));
+    box-shadow: inset 0 5px 0 var(--dc), 0 24px 50px rgba(0, 0, 0, .55), 0 2px 6px rgba(0, 0, 0, .4);
     background-position: 0 0, 0 30px, 0 0;
   }
-  .front .qn { font: 600 10px var(--sans); letter-spacing: .24em; text-transform: uppercase; color: #a3967b; padding-left: 14px; }
-  .front .qn b { color: var(--oxblood); }
+  .front .qn { display: flex; justify-content: space-between; gap: 8px; font: 600 10px var(--sans); letter-spacing: .2em; text-transform: uppercase; color: #a3967b; padding-left: 14px; }
+  .front .qn .dom { color: var(--dc); letter-spacing: .12em; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .front .qn b { color: var(--dc); }
   .front .qq {
     flex: 1; display: flex; align-items: center; margin: 6px 0; padding-left: 14px;
     font: 400 calc(var(--w) * .105)/1.08 var(--serif); letter-spacing: -.015em; text-wrap: balance;
   }
-  .front .qq em { font-style: italic; color: var(--oxblood); }
-  .card.red .front .qq em { color: var(--sapphire); }
+  .front .qq em { font-style: italic; color: var(--dc); }
   .front .hint { display: flex; align-items: center; gap: 7px; padding-left: 14px; font: 500 11px var(--sans); color: #7d7563; letter-spacing: .02em; }
-  .front .hint::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--oxblood); animation: blink 1.6s infinite; }
-  .card.red .front .hint::before { background: var(--sapphire); }
+  .front .hint::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--dc); animation: blink 1.6s infinite; }
   @keyframes blink { 50% { opacity: .25; } }
   /* a push pin through the top margin, like a notice board */
   .pin {
@@ -181,10 +182,9 @@
   /* back: the answer is the project, photo first */
   .back {
     transform: rotateY(180deg); display: flex; flex-direction: column; color: var(--text);
-    background: linear-gradient(155deg, var(--sapphire) 0%, var(--sapphire-deep) 100%);
+    background: linear-gradient(155deg, var(--dc) 0%, var(--dd) 100%);
     border: 1px solid rgba(205, 174, 116, .35);
   }
-  .card.red .back { background: linear-gradient(155deg, var(--oxblood) 0%, var(--oxblood-deep) 100%); }
   .back .shot { height: 38%; flex: none; width: 100%; object-fit: cover; object-position: top center; display: block; border-bottom: 1px solid rgba(205, 174, 116, .4); }
   .back .ans { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 10px 14px 12px; }
   .back .eb { font-size: 9.5px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); }
@@ -205,6 +205,9 @@
   .mini .card.hero .pin { width: 16px; height: 16px; margin-left: -8px; top: 5px; }
   .back a:hover { transform: translateY(-2px); }
 
+  .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 0 auto 22px; max-width: 900px; padding: 0 12px; }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; letter-spacing: .06em; color: var(--muted); }
+  .legend i { width: 12px; height: 12px; border-radius: 3px; background: var(--dc); box-shadow: 0 0 0 1px rgba(255, 255, 255, .15); }
   .decks { max-width: 1352px; margin: 0 auto; padding: 28px 16px 40px; text-align: center; }
   .decks .board { text-align: left; }
   .decks > h2 { margin: 18px 0 8px; font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
@@ -231,12 +234,13 @@
   <button class="shuffle" id="shuffle" type="button">Shuffle the questions</button>
 </header>
 
-<main><div class="board"><div class="table" id="table"></div></div></main>
+<main><div class="legend" id="legend"></div><div class="board"><div class="table" id="table"></div></div></main>
 
 <section class="decks" id="pitch-decks">
   <div class="eyebrow"><b></b>Pitch decks<b></b></div>
   <h2>The pitches.</h2>
   <p>Every pitch is a question too. Tap one for the answer, then open the deck and use the arrow keys to move through the slides.</p>
+  <div class="legend" id="deck-legend"></div>
   <div class="board"><div class="table" id="deck-table"></div></div>
 </section>
 <footer>All code lives on <a href="https://github.com/qwertykeypadapple">github.com/qwertykeypadapple</a></footer>
@@ -246,76 +250,86 @@ const GH = "https://github.com/qwertykeypadapple/";
 
 const projects = [
   // first entry is the centre-piece: gold pin, first in the middle row
-  { repo: "investor-connect", name: "Investor Connect", kind: "Web app · AI agent", img: "investor-connect.jpg", live: "https://investor-connect-051f.onrender.com/", private: true,
+  { repo: "investor-connect", name: "Investor Connect", dom: "fintech", kind: "Web app · AI agent", img: "investor-connect.jpg", live: "https://investor-connect-051f.onrender.com/", private: true,
     text: "Paste a startup's address. An AI agent clicks through the site in a real browser, then shows what an investor sees and what to fix first.",
     q: "What does an <em>investor</em> see on my website?",
     a: "An AI agent clicks through your site like an investor, then tells you <b>what to fix first</b>." },
-  { repo: "neural-debris-solution", name: "Neural Debris", kind: "Kaggle · 4th place", img: "neural-debris-solution.png",
+  { repo: "neural-debris-solution", name: "Neural Debris", dom: "algo", kind: "Kaggle · 4th place", img: "neural-debris-solution.png",
     text: "4th place in ESA's Neural Debris Removal competition: un-poisoning a satellite streak detector with distillation-constrained machine unlearning.",
     q: "Can an AI <em>unlearn</em> a trick?",
     a: "4th place at ESA: <b>un-poisoning a space-debris detector</b> without starting over." },
-  { repo: "fedpbc-demo", name: "FedPBC Demo", kind: "Interactive explainer", img: "fedpbc-demo.jpg", live: "https://qwertykeypadapple.github.io/fedpbc-demo/",
+  { repo: "fedpbc-demo", name: "FedPBC Demo", dom: "paper", kind: "Interactive explainer", img: "fedpbc-demo.jpg", live: "https://qwertykeypadapple.github.io/fedpbc-demo/",
     text: "A live in-browser walkthrough of FedPBC vs FedAvg: how one small change fixes federated learning when clients keep dropping out.",
     q: "What if phones keep <em>dropping out</em>?",
     a: "One small change keeps <b>shared learning on track</b>. Watch it live." },
-  { repo: "federation-quest", name: "Federation Quest", kind: "Game", img: "federation-quest.jpg", live: "https://qwertykeypadapple.github.io/federation-quest/",
+  { repo: "federation-quest", name: "Federation Quest", dom: "paper", kind: "Game", img: "federation-quest.jpg", live: "https://qwertykeypadapple.github.io/federation-quest/",
     text: "An RPG that teaches a federated-learning paper. Talk to the Oracle, clear quests, and leave understanding arXiv:2404.10091.",
     q: "Can you learn a paper by <em>playing</em>?",
     a: "An RPG: talk to the Oracle, clear quests, <b>understand the paper</b>." },
-  { repo: "fedmse-arcade", name: "FedMSE Arcade", kind: "Games", img: "fedmse-arcade.jpg", live: "https://qwertykeypadapple.github.io/fedmse-arcade/",
+  { repo: "fedmse-arcade", name: "FedMSE Arcade", dom: "paper", kind: "Games", img: "fedmse-arcade.jpg", live: "https://qwertykeypadapple.github.io/fedmse-arcade/",
     text: "Eight short browser games that teach a federated-learning paper on catching hackers in smart-home networks, for beginners.",
     q: "How does a smart home catch <em>hackers</em>?",
     a: "Eight short games. <b>No AI background needed.</b>" },
-  { repo: "flprogress-explained", name: "FLPro", kind: "Research · Games", img: "flpro.jpg", live: "https://qwertykeypadapple.github.io/flprogress-explained/",
+  { repo: "flprogress-explained", name: "FLPro", dom: "algo", kind: "Research · Games", img: "flpro.jpg", live: "https://qwertykeypadapple.github.io/flprogress-explained/",
     text: "Picks federated-learning clients by how fast they improve the model, not by how high their loss is, so noisy-label clients can't fool it.",
     q: "Who should a model <em>learn</em> from?",
     a: "Not whoever looks worst: <b>whoever is improving</b>. Noise can't fake progress." },
-  { repo: "fedbank-india", name: "Anvay", kind: "Website", img: "fedbank-india.jpg", live: "https://qwertykeypadapple.github.io/fedbank-india/",
+  { repo: "fedbank-india", name: "Anvay", dom: "fintech", kind: "Website", img: "fedbank-india.jpg", live: "https://qwertykeypadapple.github.io/fedbank-india/",
     text: "Federated learning pitched to Indian banks: a four-faced cube covering the DPDP and RBI rules, with a live federated-averaging demo.",
     q: "Can banks fight fraud <em>together</em>?",
     a: "They share what they learn, <b>never customer data</b>. Built for India's rules." },
-  { repo: "samhita-health", name: "Samhita Health", kind: "Website", img: "samhita-health.jpg", live: "https://qwertykeypadapple.github.io/samhita-health/",
+  { repo: "samhita-health", name: "Samhita Health", dom: "health", kind: "Website", img: "samhita-health.jpg", live: "https://qwertykeypadapple.github.io/samhita-health/",
     text: "Federated learning for Indian hospitals: train on many hospitals' data while every record stays in place, plus a DPDP compliance hub.",
     q: "Can hospitals learn without <em>moving</em> records?",
     a: "Federated learning for Indian hospitals: <b>every record stays put</b>." },
-  { repo: "doclaw-app", name: "DocLaw", kind: "Mobile app", img: "doclaw-app.png", private: true,
+  { repo: "doclaw-app", name: "DocLaw", dom: "health", kind: "Mobile app", img: "doclaw-app.png", private: true,
     text: "An offline PDF assistant for doctors and lawyers. It shows the exact text and highlights first, and explains only when asked, all on the device.",
     q: "What does this contract <em>actually</em> say?",
     a: "An offline PDF assistant: <b>the exact text first</b>, explanations only when asked." },
-  { repo: "thinking-outside-the-box", name: "Nukkad AI", kind: "Web app", img: "thinking-outside-the-box.jpg", live: "https://nukkadai.onrender.com/", private: true,
+  { repo: "thinking-outside-the-box", name: "Nukkad AI", dom: "social", kind: "Web app", img: "thinking-outside-the-box.jpg", live: "https://nukkadai.onrender.com/", private: true,
     text: "A public AI chat platform that shows you other people exploring the same topics as you, in real time.",
     q: "Who else is wondering this <em>right now</em>?",
     a: "An AI chat that shows you <b>people exploring your topic</b>, live." },
-  { repo: "daily-mind", name: "Daily Mind", kind: "Web app", img: "daily-mind.png", private: true,
+  { repo: "daily-mind", name: "Daily Mind", dom: "social", kind: "Web app", img: "daily-mind.png", private: true,
     text: "One prompt a day, anonymous public answers, and an AI summary at the end of the day. A companion to Nukkad AI.",
     q: "What if everyone answered <em>one</em> question today?",
     a: "One prompt a day, anonymous answers, <b>an AI summary at night</b>." },
-  { repo: "pokewords", name: "PokéWords", kind: "Game", img: "pokewords.jpg", live: "https://pokewords.onrender.com/", private: true,
+  { repo: "pokewords", name: "PokéWords", dom: "social", kind: "Game", img: "pokewords.jpg", live: "https://pokewords.onrender.com/", private: true,
     text: "A free, unofficial fan word game: spell Pokémon names with letter tiles, beat the gyms, clear all nine regions.",
     q: "Can you <em>spell</em> Pikachu?",
     a: "Spell Pokémon names with letter tiles and <b>beat the gyms</b>." },
-  { repo: "battery-analytics-prototype", name: "Battery Analytics", kind: "Research", img: "battery-analytics-prototype.png", private: true,
+  { repo: "battery-analytics-prototype", name: "Battery Analytics", dom: "auto", kind: "Research", img: "battery-analytics-prototype.png", private: true,
     text: "Estimates battery health and remaining life from charging data alone, validated on whole cells, with a fleet dashboard.",
     q: "Is this battery <em>healthy</em>?",
     a: "Health and remaining life, read from <b>charging data alone</b>." },
-  { repo: "logic-bench", name: "Logic Bench", kind: "Lab course", img: "logic-bench.jpg", live: "https://logic-bench.onrender.com/", private: true,
+  { repo: "logic-bench", name: "Logic Bench", dom: "edu", kind: "Lab course", img: "logic-bench.jpg", live: "https://logic-bench.onrender.com/", private: true,
     text: "A digital logic lab course in the browser: wire chips on a breadboard, write Verilog and RISC-V assembly, program an Arduino. Every lab checks itself.",
     q: "Can you build a circuit with <em>no chips</em>?",
     a: "Breadboard, Verilog, RISC-V and Arduino labs <b>in your browser</b>." },
-  { repo: "fedaml-decks", name: "FedAML Pitch", kind: "Pitch deck", img: "deck-fedaml.jpg", live: "https://qwertykeypadapple.github.io/fedaml-decks/", deck: true,
+  { repo: "fedaml-decks", name: "FedAML Pitch", dom: "fintech", kind: "Pitch deck", img: "deck-fedaml.jpg", live: "https://qwertykeypadapple.github.io/fedaml-decks/", deck: true,
     text: "Investor preview for federated anti-money-laundering across banks, on synthetic UPI data.",
     q: "Can three banks catch a <em>money mule</em> together?",
     a: "The investor pitch: <b>catch laundering across banks</b> without sharing customer data." },
-  { repo: "fedaml-decks", name: "FedAML Results", kind: "Pitch deck", img: "deck-fedaml-results.jpg", live: "https://qwertykeypadapple.github.io/fedaml-decks/results.html", deck: true,
+  { repo: "fedaml-decks", name: "FedAML Results", dom: "fintech", kind: "Pitch deck", img: "deck-fedaml-results.jpg", live: "https://qwertykeypadapple.github.io/fedaml-decks/results.html", deck: true,
     text: "Results of a federated anti-money-laundering experiment on a synthetic three-bank UPI dataset.",
     q: "Did learning <em>together</em> catch more fraud?",
     a: "The results deck: what <b>three banks training together</b> found on synthetic UPI data." },
-  { repo: "battery-pitch-deck", name: "Battery Pitch", kind: "Pitch deck", img: "deck-battery.jpg", live: "https://qwertykeypadapple.github.io/battery-pitch-deck/", deck: true,
+  { repo: "battery-pitch-deck", name: "Battery Pitch", dom: "auto", kind: "Pitch deck", img: "deck-battery.jpg", live: "https://qwertykeypadapple.github.io/battery-pitch-deck/", deck: true,
     text: "An animated, picture-led pitch for the charge-only battery health prototype.",
     q: "Can one <em>charge</em> tell a battery's age?",
     a: "An animated pitch: <b>battery health, read from one charge</b>." },
 ];
 
+// each domain has its own ink: card tint, accents and the back of the card
+const DOMAINS = {
+  fintech: { tag: "Fintech", label: "Fintech", c: "#1d6b50", d: "#0c3326" },
+  auto:    { tag: "Automotive", label: "Automotive & batteries", c: "#b0592c", d: "#5a2611" },
+  algo:    { tag: "Algorithms", label: "Algorithms", c: "#2b4597", d: "#111e4d" },
+  paper:   { tag: "Paper recreation", label: "Paper recreations", c: "#6b3d97", d: "#2f1647" },
+  health:  { tag: "Health & law", label: "Health & law", c: "#17707c", d: "#082f35" },
+  social:  { tag: "Social & games", label: "Social & games", c: "#a3263d", d: "#4a0d19" },
+  edu:     { tag: "Hardware", label: "Hardware & learning", c: "#94701c", d: "#43300a" },
+};
 const table = document.getElementById("table");
 const deckTable = document.getElementById("deck-table");
 // the board holds the work; pitch decks get their own carousel at the bottom
@@ -336,20 +350,23 @@ function setFlipped(card, on) {
 function makeCard(i) {
   const p = projects[i];
   const card = document.createElement("div");
-  card.className = "card" + (i % 2 ? " red" : "") + (i ? "" : " hero");
+  card.className = "card" + (i ? "" : " hero");
+  const D = DOMAINS[p.dom];
+  card.style.setProperty("--dc", D.c);
+  card.style.setProperty("--dd", D.d);
   card.style.setProperty("--pin", i ? PINS[i % PINS.length] : "#c9a24f");
   card.innerHTML = `
     <div class="inner">
       <div class="face front">
         <i class="pin"></i>
-        <div class="qn"><b>Q.${String(NUM[i]).padStart(2, "0")}</b> / ${TOTAL[i]}</div>
+        <div class="qn"><span><b>Q.${String(NUM[i]).padStart(2, "0")}</b></span><span class="dom">${D.tag}</span></div>
         <div class="qq"><span>${p.q}</span></div>
         <div class="hint">Tap for the answer</div>
       </div>
       <div class="face back">
         <img class="shot" src="images/${p.img}" alt="">
         <div class="ans">
-          <div class="eb">The answer · ${p.kind.split(" · ")[0]}</div>
+          <div class="eb">The answer · ${D.label}</div>
           <h2>${p.name}</h2>
           <p>${p.a}</p>
           <div class="links">
@@ -475,6 +492,15 @@ function buildBoard(table, list, ROWS, rand) {
     table.appendChild(row);
   });
 }
+
+// a key for each board: one swatch per domain on it
+function legend(el, list) {
+  const seen = [...new Set(list.map((i) => projects[i].dom))];
+  el.innerHTML = Object.keys(DOMAINS).filter((k) => seen.includes(k))
+    .map((k) => `<span style="--dc:${DOMAINS[k].c}"><i></i>${DOMAINS[k].label}</span>`).join("");
+}
+legend(document.getElementById("legend"), WORK);
+legend(document.getElementById("deck-legend"), DECKS);
 
 function build() {
   const rand = rng(seed);
