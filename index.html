@@ -50,7 +50,7 @@
   }
   @keyframes drift { to { transform: translate(5vmax, 3vmax) scale(1.1); } }
 
-  header, main, footer { position: relative; z-index: 1; }
+  header, main, footer, .decks { position: relative; z-index: 1; }
 
   header { text-align: center; padding: 72px 20px 12px; }
   .eyebrow {
@@ -178,6 +178,15 @@
   .card.hero .pin { width: 22px; height: 22px; margin-left: -11px; top: 4px; }
   .back a:hover { transform: translateY(-2px); }
 
+  .decks { max-width: 880px; margin: 0 auto; padding: 28px 20px 40px; text-align: center; }
+  .decks h2 { margin: 18px 0 8px; font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
+  .decks > p { margin: 0 auto 28px; max-width: 460px; color: var(--muted); font-size: 15px; line-height: 1.6; }
+  .deck-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 14px; text-align: left; }
+  .deck-list a { display: flex; flex-direction: column; gap: 6px; height: 100%; box-sizing: border-box; padding: 18px 20px; border: 1px solid rgba(205,174,116,.28); border-radius: 12px; background: rgba(255,255,255,.03); color: var(--paper); text-decoration: none; transition: border-color .2s, background .2s; }
+  .deck-list a:hover, .deck-list a:focus-visible { border-color: var(--gold); background: rgba(205,174,116,.08); }
+  .deck-list .t { font-family: var(--serif); font-size: 19px; line-height: 1.25; }
+  .deck-list .d { color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+  .deck-list .u { margin-top: auto; padding-top: 6px; color: var(--gold-soft); font-size: 12px; letter-spacing: .04em; }
   footer { text-align: center; padding: 10px 20px 52px; color: var(--muted); font-size: 13px; letter-spacing: .02em; }
   footer a { color: var(--gold-soft); text-underline-offset: 3px; }
 
@@ -199,6 +208,17 @@
 
 <main><div class="board"><div class="table" id="table"></div></div></main>
 
+<section class="decks" id="pitch-decks">
+  <div class="eyebrow"><b></b>Pitch decks<b></b></div>
+  <h2>The pitches.</h2>
+  <p>Slide decks for some of the work above. Each opens in a new tab; use the arrow keys to move through the slides.</p>
+  <ul class="deck-list">
+    <li><a href="https://qwertykeypadapple.github.io/fedaml-decks/" target="_blank" rel="noopener"><span class="t">FedAML: investor preview</span><span class="d">Federated anti-money-laundering across banks, pitched on synthetic UPI data.</span><span class="u">View deck ↗</span></a></li>
+    <li><a href="https://qwertykeypadapple.github.io/fedaml-decks/results.html" target="_blank" rel="noopener"><span class="t">FedAML: experiment results</span><span class="d">What the three-bank federated AML experiment on synthetic UPI data found.</span><span class="u">View deck ↗</span></a></li>
+    <li><a href="https://qwertykeypadapple.github.io/battery-pitch-deck/" target="_blank" rel="noopener"><span class="t">Battery health from the charge</span><span class="d">An animated, picture-led pitch for the charge-only battery health prototype.</span><span class="u">View deck ↗</span></a></li>
+    <li><a href="https://github.com/qwertykeypadapple/battery-aware-fl-deck" target="_blank" rel="noopener"><span class="t">Battery-aware federated learning</span><span class="d">Choosing which phones train each federated round so batteries wear less, at a small accuracy cost.</span><span class="u">View on GitHub ↗</span></a></li>
+  </ul>
+</section>
 <footer>All code lives on <a href="https://github.com/qwertykeypadapple">github.com/qwertykeypadapple</a></footer>
 
 <script>
