@@ -372,6 +372,10 @@ const projects = [
     text: "An animated, picture-led pitch for the charge-only battery health prototype.",
     q: "Can one <em>charge</em> tell a battery's age?",
     a: "An animated pitch: <b>battery health, read from one charge</b>." },
+  { repo: "bearing-collective", name: "Bearing Collective", dom: "industry", kind: "Pitch deck", img: "deck-bearing.jpg", live: "https://qwertykeypadapple.github.io/bearing-collective/", deck: true,
+    text: "Five plants learn bearing faults together with Flower, told as thirteen simple questions.",
+    q: "Can five factories spot a <em>failing</em> bearing together?",
+    a: "Thirteen simple questions: plants learn <b>bearing faults together</b> while their data stays put." },
 ];
 
 // each domain has its own ink: card tint, accents and the back of the card
@@ -382,6 +386,7 @@ const DOMAINS = {
   paper:   { tag: "Paper recreation", label: "Paper recreations", c: "#6b3d97", d: "#2f1647" },
   health:  { tag: "Health & law", label: "Health & law", c: "#17707c", d: "#082f35" },
   social:  { tag: "Social & games", label: "Social & games", c: "#a3263d", d: "#4a0d19" },
+  industry: { tag: "Industrial", label: "Industrial", c: "#4f5a68", d: "#1f252d" },
   edu:     { tag: "Hardware", label: "Hardware & learning", c: "#94701c", d: "#43300a" },
 };
 const table = document.getElementById("table");

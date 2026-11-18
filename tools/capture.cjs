@@ -14,6 +14,7 @@ const shots = [
   ["deck-fedaml", "https://qwertykeypadapple.github.io/fedaml-decks/"],
   ["deck-fedaml-results", "https://qwertykeypadapple.github.io/fedaml-decks/results.html"],
   ["deck-battery", "https://qwertykeypadapple.github.io/battery-pitch-deck/"],
+  ["deck-bearing", "https://qwertykeypadapple.github.io/bearing-collective/"],
   ["logic-bench", "https://logic-bench.onrender.com/"],
   ["pokewords", "https://pokewords.onrender.com/"],
   ["daily-mind", "https://daily-mind.onrender.com/"],
