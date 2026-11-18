@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>qwertykeypadapple · Projects</title>
-<meta name="description" content="Everything I've built, scattered on one table. Tap a photo to flip it.">
+<meta name="description" content="Fourteen easy questions on a notice board. Flip one to find the project that answers it.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -118,9 +118,11 @@
   .card.flipped { rotate: 0deg; transform: none; z-index: 30; }
 
   /* narrow boards: small prints; a tapped one opens full size in the middle of the screen */
-  .mini .front { padding: 24px 8px 0; }
-  .mini .front .cap { height: 32px; font-size: clamp(11px, calc(var(--w) * .085), 15px); letter-spacing: -.01em; }
-  .mini .front .cap em { display: none; }
+  .mini .front { padding: 24px 8px 9px; background-position: 0 0, 0 22px, 0 0; }
+  .mini .front .qn { display: none; }
+  .mini .front .qq { padding-left: 12px; font-size: calc(var(--w) * .118); margin: 0 0 4px; }
+  .mini .front .hint { padding-left: 12px; font-size: 9.5px; gap: 5px; }
+  .mini .front .hint::before { width: 5px; height: 5px; }
   .mini .pin { width: 14px; height: 14px; margin-left: -7px; top: 6px; box-shadow: 3px 4px 4px rgba(0, 0, 0, .38), inset -1px -2px 3px rgba(0, 0, 0, .28); }
   .mini .face { box-shadow: 0 10px 22px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .4); }
   .viewer {
@@ -145,18 +147,27 @@
     box-shadow: 0 24px 50px rgba(0, 0, 0, .55), 0 2px 6px rgba(0, 0, 0, .4);
   }
 
-  /* front: a photo print */
-  .front { background: var(--paper); padding: 30px 12px 0; display: flex; flex-direction: column; }
-  .front img {
-    width: 100%; flex: 1; min-height: 0; object-fit: cover; object-position: top center;
-    background: #e4dccb; border-radius: 1px; display: block;
+  /* front: a question on a ruled index card */
+  .front {
+    padding: 34px 16px 14px; display: flex; flex-direction: column; color: #1a2038;
+    background:
+      linear-gradient(90deg, transparent 0 22px, rgba(155, 35, 53, .28) 22px 23px, transparent 23px),
+      repeating-linear-gradient(180deg, transparent 0 25px, rgba(44, 79, 158, .13) 25px 26px),
+      var(--paper);
+    background-position: 0 0, 0 30px, 0 0;
   }
-  .front .cap {
-    height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    font: italic 500 18px/1 var(--serif); color: #1a2038; white-space: nowrap;
+  .front .qn { font: 600 10px var(--sans); letter-spacing: .24em; text-transform: uppercase; color: #a3967b; padding-left: 14px; }
+  .front .qn b { color: var(--oxblood); }
+  .front .qq {
+    flex: 1; display: flex; align-items: center; margin: 6px 0; padding-left: 14px;
+    font: 400 calc(var(--w) * .105)/1.08 var(--serif); letter-spacing: -.015em; text-wrap: balance;
   }
-  .front .cap span { flex: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; padding: 2px 0; }
-  .front .cap em { min-width: 0; overflow: hidden; text-overflow: ellipsis; font: 500 10px var(--sans); letter-spacing: .16em; text-transform: uppercase; color: #9a8f78; font-style: normal; }
+  .front .qq em { font-style: italic; color: var(--oxblood); }
+  .card.red .front .qq em { color: var(--sapphire); }
+  .front .hint { display: flex; align-items: center; gap: 7px; padding-left: 14px; font: 500 11px var(--sans); color: #7d7563; letter-spacing: .02em; }
+  .front .hint::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--oxblood); animation: blink 1.6s infinite; }
+  .card.red .front .hint::before { background: var(--sapphire); }
+  @keyframes blink { 50% { opacity: .25; } }
   /* a push pin through the top margin, like a notice board */
   .pin {
     position: absolute; top: 6px; left: 50%; width: 18px; height: 18px; margin-left: -9px;
@@ -167,32 +178,28 @@
     box-shadow: 4px 6px 5px rgba(0, 0, 0, .38), 1px 1px 1px rgba(0, 0, 0, .35), inset -2px -3px 4px rgba(0, 0, 0, .28);
   }
 
-  /* back: the write-up */
+  /* back: the answer is the project, photo first */
   .back {
-    transform: rotateY(180deg);
-    padding: 16px 18px 16px; display: flex; flex-direction: column; color: var(--text);
+    transform: rotateY(180deg); display: flex; flex-direction: column; color: var(--text);
     background: linear-gradient(155deg, var(--sapphire) 0%, var(--sapphire-deep) 100%);
     border: 1px solid rgba(205, 174, 116, .35);
   }
   .card.red .back { background: linear-gradient(155deg, var(--oxblood) 0%, var(--oxblood-deep) 100%); }
-  .back .bg {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: cover; object-position: top center; opacity: .2; filter: saturate(.7);
-  }
-  .back > :not(.bg) { position: relative; }
-  .back h2 { margin: 0 0 5px; font: 500 21px/1.1 var(--serif); letter-spacing: -.01em; }
-  .back .kind {
-    font-size: 10px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--gold);
-    padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid rgba(205, 174, 116, .28);
-  }
-  .back p { margin: 0; font-size: 13px; line-height: 1.42; color: rgba(243, 237, 224, .95); text-shadow: 0 1px 2px rgba(0, 0, 0, .45); flex: 1; min-height: 0; overflow: auto; }
-  .back .links { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .back .shot { height: 38%; flex: none; width: 100%; object-fit: cover; object-position: top center; display: block; border-bottom: 1px solid rgba(205, 174, 116, .4); }
+  .back .ans { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 10px 14px 12px; }
+  .back .eb { font-size: 9.5px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); }
+  .back h2 { margin: 3px 0 5px; font: 500 20px/1.1 var(--serif); letter-spacing: -.01em; }
+  .back p { margin: 0; font-size: 12.5px; line-height: 1.42; color: rgba(243, 237, 224, .92); flex: 1; min-height: 0; overflow: auto; }
+  .back p b { color: var(--gold-soft); font-weight: 600; }
+  .back .links { display: flex; gap: 7px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
   .back a {
-    padding: 7px 13px; border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-decoration: none;
+    padding: 6px 12px; border-radius: 999px; font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-decoration: none;
     color: var(--ink); background: var(--gold-soft); border: 1px solid var(--gold-soft); transition: transform .15s, background .2s;
   }
   .back a.ghost { color: var(--gold-soft); background: transparent; border-color: rgba(205, 174, 116, .6); }
-  .back .lock { align-self: center; font-size: 10px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+  .back .lock { font-size: 9.5px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+  .viewer .back h2 { font-size: 24px; }
+  .viewer .back p { font-size: 14px; }
   .card.hero .face { box-shadow: 0 30px 70px rgba(0, 0, 0, .65), 0 0 0 1px rgba(205, 174, 116, .55), 0 2px 6px rgba(0, 0, 0, .4); }
   .card.hero .pin { width: 22px; height: 22px; margin-left: -11px; top: 4px; }
   .mini .card.hero .pin { width: 16px; height: 16px; margin-left: -8px; top: 5px; }
@@ -214,6 +221,7 @@
     .glow i { animation: none; }
     .card, .inner { transition-duration: .01s; }
     .track { animation: none; }
+    .front .hint::before { animation: none; }
     .row { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
   }
 </style>
@@ -224,8 +232,8 @@
 <header>
   <div class="eyebrow"><b></b>qwertykeypadapple · Selected work<b></b></div>
   <h1>Things I've <span class="b">built</span><span class="r">.</span></h1>
-  <p class="lede">Every project is a photo pinned to the board, drifting past in three rows. Tap one to flip it over and read what it is.</p>
-  <button class="shuffle" id="shuffle" type="button">Shuffle the rows</button>
+  <p class="lede">Fourteen easy questions, pinned to the board. Tap one, and the project that answers it is on the back.</p>
+  <button class="shuffle" id="shuffle" type="button">Shuffle the questions</button>
 </header>
 
 <main><div class="board"><div class="table" id="table"></div></div></main>
@@ -248,33 +256,61 @@ const GH = "https://github.com/qwertykeypadapple/";
 const projects = [
   // first entry is the centre-piece: gold pin, first in the middle row
   { repo: "investor-connect", name: "Investor Connect", kind: "Web app · AI agent", img: "investor-connect.jpg", live: "https://investor-connect-051f.onrender.com/", private: true,
-    text: "Paste a startup's address. An AI agent clicks through the site in a real browser, then shows what an investor sees and what to fix first." },
+    text: "Paste a startup's address. An AI agent clicks through the site in a real browser, then shows what an investor sees and what to fix first.",
+    q: "What does an <em>investor</em> see on my website?",
+    a: "An AI agent clicks through your site like an investor, then tells you <b>what to fix first</b>." },
   { repo: "neural-debris-solution", name: "Neural Debris", kind: "Kaggle · 4th place", img: "neural-debris-solution.png",
-    text: "4th place in ESA's Neural Debris Removal competition: un-poisoning a satellite streak detector with distillation-constrained machine unlearning." },
+    text: "4th place in ESA's Neural Debris Removal competition: un-poisoning a satellite streak detector with distillation-constrained machine unlearning.",
+    q: "Can an AI <em>unlearn</em> a trick?",
+    a: "4th place at ESA: <b>un-poisoning a space-debris detector</b> without starting over." },
   { repo: "fedpbc-demo", name: "FedPBC Demo", kind: "Interactive explainer", img: "fedpbc-demo.jpg", live: "https://qwertykeypadapple.github.io/fedpbc-demo/",
-    text: "A live in-browser walkthrough of FedPBC vs FedAvg: how one small change fixes federated learning when clients keep dropping out." },
+    text: "A live in-browser walkthrough of FedPBC vs FedAvg: how one small change fixes federated learning when clients keep dropping out.",
+    q: "What if phones keep <em>dropping out</em>?",
+    a: "One small change keeps <b>shared learning on track</b>. Watch it live." },
   { repo: "federation-quest", name: "Federation Quest", kind: "Game", img: "federation-quest.jpg", live: "https://qwertykeypadapple.github.io/federation-quest/",
-    text: "An RPG that teaches a federated-learning paper. Talk to the Oracle, clear quests, and leave understanding arXiv:2404.10091." },
+    text: "An RPG that teaches a federated-learning paper. Talk to the Oracle, clear quests, and leave understanding arXiv:2404.10091.",
+    q: "Can you learn a paper by <em>playing</em>?",
+    a: "An RPG: talk to the Oracle, clear quests, <b>understand the paper</b>." },
   { repo: "fedmse-arcade", name: "FedMSE Arcade", kind: "Games", img: "fedmse-arcade.jpg", live: "https://qwertykeypadapple.github.io/fedmse-arcade/",
-    text: "Eight short browser games that teach a federated-learning paper on catching hackers in smart-home networks, for beginners." },
+    text: "Eight short browser games that teach a federated-learning paper on catching hackers in smart-home networks, for beginners.",
+    q: "How does a smart home catch <em>hackers</em>?",
+    a: "Eight short games. <b>No AI background needed.</b>" },
   { repo: "flprogress-explained", name: "FLPro", kind: "Research · Games", img: "flpro.jpg", live: "https://qwertykeypadapple.github.io/flprogress-explained/",
-    text: "Picks federated-learning clients by how fast they improve the model, not by how high their loss is, so noisy-label clients can't fool it." },
+    text: "Picks federated-learning clients by how fast they improve the model, not by how high their loss is, so noisy-label clients can't fool it.",
+    q: "Who should a model <em>learn</em> from?",
+    a: "Not whoever looks worst: <b>whoever is improving</b>. Noise can't fake progress." },
   { repo: "fedbank-india", name: "Anvay", kind: "Website", img: "fedbank-india.jpg", live: "https://qwertykeypadapple.github.io/fedbank-india/",
-    text: "Federated learning pitched to Indian banks: a four-faced cube covering the DPDP and RBI rules, with a live federated-averaging demo." },
+    text: "Federated learning pitched to Indian banks: a four-faced cube covering the DPDP and RBI rules, with a live federated-averaging demo.",
+    q: "Can banks fight fraud <em>together</em>?",
+    a: "They share what they learn, <b>never customer data</b>. Built for India's rules." },
   { repo: "samhita-health", name: "Samhita Health", kind: "Website", img: "samhita-health.jpg", live: "https://qwertykeypadapple.github.io/samhita-health/",
-    text: "Federated learning for Indian hospitals: train on many hospitals' data while every record stays in place, plus a DPDP compliance hub." },
+    text: "Federated learning for Indian hospitals: train on many hospitals' data while every record stays in place, plus a DPDP compliance hub.",
+    q: "Can hospitals learn without <em>moving</em> records?",
+    a: "Federated learning for Indian hospitals: <b>every record stays put</b>." },
   { repo: "doclaw-app", name: "DocLaw", kind: "Mobile app", img: "doclaw-app.png", private: true,
-    text: "An offline PDF assistant for doctors and lawyers. It shows the exact text and highlights first, and explains only when asked, all on the device." },
+    text: "An offline PDF assistant for doctors and lawyers. It shows the exact text and highlights first, and explains only when asked, all on the device.",
+    q: "What does this contract <em>actually</em> say?",
+    a: "An offline PDF assistant: <b>the exact text first</b>, explanations only when asked." },
   { repo: "thinking-outside-the-box", name: "Nukkad AI", kind: "Web app", img: "thinking-outside-the-box.jpg", live: "https://nukkadai.onrender.com/", private: true,
-    text: "A public AI chat platform that shows you other people exploring the same topics as you, in real time." },
+    text: "A public AI chat platform that shows you other people exploring the same topics as you, in real time.",
+    q: "Who else is wondering this <em>right now</em>?",
+    a: "An AI chat that shows you <b>people exploring your topic</b>, live." },
   { repo: "daily-mind", name: "Daily Mind", kind: "Web app", img: "daily-mind.png", private: true,
-    text: "One prompt a day, anonymous public answers, and an AI summary at the end of the day. A companion to Nukkad AI." },
+    text: "One prompt a day, anonymous public answers, and an AI summary at the end of the day. A companion to Nukkad AI.",
+    q: "What if everyone answered <em>one</em> question today?",
+    a: "One prompt a day, anonymous answers, <b>an AI summary at night</b>." },
   { repo: "pokewords", name: "PokéWords", kind: "Game", img: "pokewords.jpg", live: "https://pokewords.onrender.com/", private: true,
-    text: "A free, unofficial fan word game: spell Pokémon names with letter tiles, beat the gyms, clear all nine regions." },
+    text: "A free, unofficial fan word game: spell Pokémon names with letter tiles, beat the gyms, clear all nine regions.",
+    q: "Can you <em>spell</em> Pikachu?",
+    a: "Spell Pokémon names with letter tiles and <b>beat the gyms</b>." },
   { repo: "battery-analytics-prototype", name: "Battery Analytics", kind: "Research", img: "battery-analytics-prototype.png", private: true,
-    text: "Estimates battery health and remaining life from charging data alone, validated on whole cells, with a fleet dashboard." },
+    text: "Estimates battery health and remaining life from charging data alone, validated on whole cells, with a fleet dashboard.",
+    q: "Is this battery <em>healthy</em>?",
+    a: "Health and remaining life, read from <b>charging data alone</b>." },
   { repo: "logic-bench", name: "Logic Bench", kind: "Lab course", img: "logic-bench.jpg", live: "https://logic-bench.onrender.com/", private: true,
-    text: "A digital logic lab course in the browser: wire chips on a breadboard, write Verilog and RISC-V assembly, program an Arduino. Every lab checks itself." },
+    text: "A digital logic lab course in the browser: wire chips on a breadboard, write Verilog and RISC-V assembly, program an Arduino. Every lab checks itself.",
+    q: "Can you build a circuit with <em>no chips</em>?",
+    a: "Breadboard, Verilog, RISC-V and Arduino labs <b>in your browser</b>." },
 ];
 
 const table = document.getElementById("table");
@@ -297,18 +333,21 @@ function makeCard(i) {
     <div class="inner">
       <div class="face front">
         <i class="pin"></i>
-        <img src="images/${p.img}" alt="">
-        <div class="cap"><span>${p.name}</span><em>${p.kind.split(" · ")[0]}</em></div>
+        <div class="qn"><b>Q.${String(i + 1).padStart(2, "0")}</b> / ${projects.length}</div>
+        <div class="qq"><span>${p.q}</span></div>
+        <div class="hint">Tap for the answer</div>
       </div>
       <div class="face back">
-        <img class="bg" src="images/${p.img}" alt="">
-        <h2>${p.name}</h2>
-        <div class="kind">${p.kind}</div>
-        <p>${p.text}</p>
-        <div class="links">
-          ${p.private ? "" : `<a href="${GH + p.repo}" target="_blank" rel="noopener">GitHub ↗</a>`}
-          ${p.live ? `<a class="${p.private ? "" : "ghost"}" href="${p.live}" target="_blank" rel="noopener">Live site ↗</a>` : ""}
-          ${p.private ? `<span class="lock">Private repo</span>` : ""}
+        <img class="shot" src="images/${p.img}" alt="">
+        <div class="ans">
+          <div class="eb">The answer · ${p.kind.split(" · ")[0]}</div>
+          <h2>${p.name}</h2>
+          <p>${p.a}</p>
+          <div class="links">
+            ${p.private ? "" : `<a href="${GH + p.repo}" target="_blank" rel="noopener">GitHub ↗</a>`}
+            ${p.live ? `<a class="${p.private ? "" : "ghost"}" href="${p.live}" target="_blank" rel="noopener">Live site ↗</a>` : ""}
+            ${p.private ? `<span class="lock">Private repo</span>` : ""}
+          </div>
         </div>
       </div>
     </div>`;
@@ -403,7 +442,7 @@ function build() {
         if (c === 0) {
           card.tabIndex = 0;
           card.setAttribute("role", "button");
-          card.setAttribute("aria-label", projects[idx].name + ": flip for details");
+          card.setAttribute("aria-label", "Question: " + projects[idx].q.replace(/<[^>]+>/g, "") + " Flip for the answer.");
         } else {
           card.setAttribute("aria-hidden", "true"); // a repeat, for the loop
           card.querySelectorAll("a").forEach((a) => (a.tabIndex = -1));
