@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>qwertykeypadapple · Projects</title>
-<meta name="description" content="Fourteen easy questions on a notice board. Flip one to find the project that answers it.">
+<meta name="description" content="Easy questions on a notice board. Flip one to find the project that answers it.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -232,7 +232,7 @@
 <header>
   <div class="eyebrow"><b></b>qwertykeypadapple · Selected work<b></b></div>
   <h1>Things I've <span class="b">built</span><span class="r">.</span></h1>
-  <p class="lede">Fourteen easy questions, pinned to the board. Tap one, and the project that answers it is on the back.</p>
+  <p class="lede">Easy questions, pinned to the board. Tap one, and the project or pitch deck that answers it is on the back.</p>
   <button class="shuffle" id="shuffle" type="button">Shuffle the questions</button>
 </header>
 
@@ -311,6 +311,18 @@ const projects = [
     text: "A digital logic lab course in the browser: wire chips on a breadboard, write Verilog and RISC-V assembly, program an Arduino. Every lab checks itself.",
     q: "Can you build a circuit with <em>no chips</em>?",
     a: "Breadboard, Verilog, RISC-V and Arduino labs <b>in your browser</b>." },
+  { repo: "fedaml-decks", name: "FedAML Pitch", kind: "Pitch deck", img: "deck-fedaml.jpg", live: "https://qwertykeypadapple.github.io/fedaml-decks/", deck: true,
+    text: "Investor preview for federated anti-money-laundering across banks, on synthetic UPI data.",
+    q: "Can three banks catch a <em>money mule</em> together?",
+    a: "The investor pitch: <b>catch laundering across banks</b> without sharing customer data." },
+  { repo: "fedaml-decks", name: "FedAML Results", kind: "Pitch deck", img: "deck-fedaml-results.jpg", live: "https://qwertykeypadapple.github.io/fedaml-decks/results.html", deck: true,
+    text: "Results of a federated anti-money-laundering experiment on a synthetic three-bank UPI dataset.",
+    q: "Did learning <em>together</em> catch more fraud?",
+    a: "The results deck: what <b>three banks training together</b> found on synthetic UPI data." },
+  { repo: "battery-pitch-deck", name: "Battery Pitch", kind: "Pitch deck", img: "deck-battery.jpg", live: "https://qwertykeypadapple.github.io/battery-pitch-deck/", deck: true,
+    text: "An animated, picture-led pitch for the charge-only battery health prototype.",
+    q: "Can one <em>charge</em> tell a battery's age?",
+    a: "An animated pitch: <b>battery health, read from one charge</b>." },
 ];
 
 const table = document.getElementById("table");
@@ -344,8 +356,9 @@ function makeCard(i) {
           <h2>${p.name}</h2>
           <p>${p.a}</p>
           <div class="links">
-            ${p.private ? "" : `<a href="${GH + p.repo}" target="_blank" rel="noopener">GitHub ↗</a>`}
-            ${p.live ? `<a class="${p.private ? "" : "ghost"}" href="${p.live}" target="_blank" rel="noopener">Live site ↗</a>` : ""}
+            ${p.deck ? `<a href="${p.live}" target="_blank" rel="noopener">Open deck ↗</a>` : ""}
+            ${p.private ? "" : `<a class="${p.deck ? "ghost" : ""}" href="${GH + p.repo}" target="_blank" rel="noopener">GitHub ↗</a>`}
+            ${p.live && !p.deck ? `<a class="${p.private ? "" : "ghost"}" href="${p.live}" target="_blank" rel="noopener">Live site ↗</a>` : ""}
             ${p.private ? `<span class="lock">Private repo</span>` : ""}
           </div>
         </div>
