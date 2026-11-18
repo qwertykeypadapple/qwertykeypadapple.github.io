@@ -205,15 +205,10 @@
   .mini .card.hero .pin { width: 16px; height: 16px; margin-left: -8px; top: 5px; }
   .back a:hover { transform: translateY(-2px); }
 
-  .decks { max-width: 880px; margin: 0 auto; padding: 28px 20px 40px; text-align: center; }
-  .decks h2 { margin: 18px 0 8px; font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
+  .decks { max-width: 1352px; margin: 0 auto; padding: 28px 16px 40px; text-align: center; }
+  .decks .board { text-align: left; }
+  .decks > h2 { margin: 18px 0 8px; font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
   .decks > p { margin: 0 auto 28px; max-width: 460px; color: var(--muted); font-size: 15px; line-height: 1.6; }
-  .deck-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 14px; text-align: left; }
-  .deck-list a { display: flex; flex-direction: column; gap: 6px; height: 100%; box-sizing: border-box; padding: 18px 20px; border: 1px solid rgba(205,174,116,.28); border-radius: 12px; background: rgba(255,255,255,.03); color: var(--paper); text-decoration: none; transition: border-color .2s, background .2s; }
-  .deck-list a:hover, .deck-list a:focus-visible { border-color: var(--gold); background: rgba(205,174,116,.08); }
-  .deck-list .t { font-family: var(--serif); font-size: 19px; line-height: 1.25; }
-  .deck-list .d { color: var(--muted); font-size: 13.5px; line-height: 1.5; }
-  .deck-list .u { margin-top: auto; padding-top: 6px; color: var(--gold-soft); font-size: 12px; letter-spacing: .04em; }
   footer { text-align: center; padding: 10px 20px 52px; color: var(--muted); font-size: 13px; letter-spacing: .02em; }
   footer a { color: var(--gold-soft); text-underline-offset: 3px; }
 
@@ -232,7 +227,7 @@
 <header>
   <div class="eyebrow"><b></b>qwertykeypadapple · Selected work<b></b></div>
   <h1>Things I've <span class="b">built</span><span class="r">.</span></h1>
-  <p class="lede">Easy questions, pinned to the board. Tap one, and the project or pitch deck that answers it is on the back.</p>
+  <p class="lede">Easy questions, pinned to the board. Tap one, and the project that answers it is on the back.</p>
   <button class="shuffle" id="shuffle" type="button">Shuffle the questions</button>
 </header>
 
@@ -241,12 +236,8 @@
 <section class="decks" id="pitch-decks">
   <div class="eyebrow"><b></b>Pitch decks<b></b></div>
   <h2>The pitches.</h2>
-  <p>Slide decks for some of the work above. Each opens in a new tab; use the arrow keys to move through the slides.</p>
-  <ul class="deck-list">
-    <li><a href="https://qwertykeypadapple.github.io/fedaml-decks/" target="_blank" rel="noopener"><span class="t">FedAML: investor preview</span><span class="d">Federated anti-money-laundering across banks, pitched on synthetic UPI data.</span><span class="u">View deck ↗</span></a></li>
-    <li><a href="https://qwertykeypadapple.github.io/fedaml-decks/results.html" target="_blank" rel="noopener"><span class="t">FedAML: experiment results</span><span class="d">What the three-bank federated AML experiment on synthetic UPI data found.</span><span class="u">View deck ↗</span></a></li>
-    <li><a href="https://qwertykeypadapple.github.io/battery-pitch-deck/" target="_blank" rel="noopener"><span class="t">Battery health from the charge</span><span class="d">An animated, picture-led pitch for the charge-only battery health prototype.</span><span class="u">View deck ↗</span></a></li>
-  </ul>
+  <p>Every pitch is a question too. Tap one for the answer, then open the deck and use the arrow keys to move through the slides.</p>
+  <div class="board"><div class="table" id="deck-table"></div></div>
 </section>
 <footer>All code lives on <a href="https://github.com/qwertykeypadapple">github.com/qwertykeypadapple</a></footer>
 
@@ -326,6 +317,12 @@ const projects = [
 ];
 
 const table = document.getElementById("table");
+const deckTable = document.getElementById("deck-table");
+// the board holds the work; pitch decks get their own carousel at the bottom
+const WORK = projects.map((p, i) => i).filter((i) => !projects[i].deck);
+const DECKS = projects.map((p, i) => i).filter((i) => projects[i].deck);
+const NUM = [], TOTAL = [];
+for (const list of [WORK, DECKS]) list.forEach((i, k) => { NUM[i] = k + 1; TOTAL[i] = list.length; });
 
 // jewel tones: sapphire, oxblood, emerald, gold, amethyst, copper, teal, pearl
 const PINS = ["#2c4f9e", "#9b2335", "#1f7a5c", "#c9a24f", "#6a3f8f", "#b5683a", "#1f6f80", "#d9d2c0"];
@@ -345,7 +342,7 @@ function makeCard(i) {
     <div class="inner">
       <div class="face front">
         <i class="pin"></i>
-        <div class="qn"><b>Q.${String(i + 1).padStart(2, "0")}</b> / ${projects.length}</div>
+        <div class="qn"><b>Q.${String(NUM[i]).padStart(2, "0")}</b> / ${TOTAL[i]}</div>
         <div class="qq"><span>${p.q}</span></div>
         <div class="hint">Tap for the answer</div>
       </div>
@@ -379,7 +376,6 @@ function rng(seed) {
 }
 let seed = 7;
 
-const ROWS = 3;
 const MINI_BELOW = 700;     // board width under which prints are small and open in a viewer
 const PX_PER_SECOND = 22;   // drift speed
 const heightFor = (w) => Math.round(w * 0.72) + 84;
@@ -415,8 +411,7 @@ function closeViewer() {
 viewer.addEventListener("click", (e) => { if (!e.target.closest("a")) closeViewer(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeViewer(); });
 
-function build() {
-  const rand = rng(seed);
+function buildBoard(table, list, ROWS, rand) {
   const W = table.clientWidth;
   const mini = W < MINI_BELOW;
   table.classList.toggle("mini", mini);
@@ -426,13 +421,13 @@ function build() {
   table.style.setProperty("--gap-x", gapX + "px");
   table.style.setProperty("--gap-y", (mini ? 4 : 10) + "px");
 
-  // deal the projects into rows, the centre-piece first in the middle row
-  const order = projects.map((_, i) => i).slice(1);
+  // deal the cards into rows; the board's centre-piece (projects[0]) goes in the middle row
+  const order = list.filter((i) => i !== 0);
   for (let i = order.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
     [order[i], order[j]] = [order[j], order[i]];
   }
-  order.splice(Math.floor((order.length + 1) / 2), 0, 0);
+  if (list.includes(0)) order.splice(Math.floor((order.length + 1) / 2), 0, 0);
   const rows = Array.from({ length: ROWS }, () => []);
   order.forEach((idx, k) => rows[Math.floor((k * ROWS) / order.length)].push(idx));
 
@@ -479,6 +474,12 @@ function build() {
     row.appendChild(track);
     table.appendChild(row);
   });
+}
+
+function build() {
+  const rand = rng(seed);
+  buildBoard(table, WORK, 3, rand);
+  buildBoard(deckTable, DECKS, 1, rand);
 }
 
 document.getElementById("shuffle").addEventListener("click", () => {
