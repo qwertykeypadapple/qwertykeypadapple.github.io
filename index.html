@@ -86,33 +86,52 @@
     box-shadow: 0 0 0 9px #17120f, 0 0 0 10px rgba(205, 174, 116, .3), 0 40px 80px rgba(0, 0, 0, .55), inset 0 0 60px rgba(0, 0, 0, .5);
   }
   @media (max-width: 600px) { .board { padding: 18px 6px; } }
-  .table { position: relative; }
+  /* three rows of prints drifting past, alternate rows in opposite directions */
+  .table { display: flex; flex-direction: column; gap: var(--gap-y); }
+  .row {
+    overflow-x: clip; overflow-y: visible; padding: 14px 0 20px;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+            mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+  }
+  .track {
+    display: flex; gap: var(--gap-x); width: max-content; padding-left: var(--gap-x);
+    animation: slide var(--secs) linear infinite;
+  }
+  .row.rev .track { animation-direction: reverse; }
+  @keyframes slide { to { transform: translateX(calc(-1 * var(--shift))); } }
+  /* a row rests while one of its prints is being read or pointed at */
+  .row:has(.flipped) .track, .row:has(:focus-visible) .track, .viewing .track { animation-play-state: paused; }
+  @media (hover: hover) { .row:hover .track { animation-play-state: paused; } }
 
   .card {
-    position: absolute; left: 0; top: 0;
+    position: relative; flex: none;
     width: var(--w); height: var(--h);
     padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left;
     cursor: pointer; perspective: 1200px;
-    z-index: var(--z);
-    transform-origin: 50% 15px;
-    translate: var(--x) var(--y); rotate: var(--r);
-    transition: rotate .7s cubic-bezier(.2, .9, .25, 1.15), transform .3s, width .55s cubic-bezier(.3, .8, .2, 1), height .55s cubic-bezier(.3, .8, .2, 1);
+    transform-origin: 50% 15px; rotate: var(--r);
+    transition: rotate .7s cubic-bezier(.2, .9, .25, 1.15), transform .3s;
     -webkit-tap-highlight-color: transparent;
   }
-  .dealing .card { transition: translate .7s cubic-bezier(.2, .9, .25, 1.15), rotate .7s cubic-bezier(.2, .9, .25, 1.15), transform .3s, width .55s cubic-bezier(.3, .8, .2, 1), height .55s cubic-bezier(.3, .8, .2, 1); }
   @media (hover: hover) {
     .card:hover { rotate: calc(var(--r) * .4); transform: translateY(-8px); z-index: 20; }
   }
   .card.flipped { rotate: 0deg; transform: none; z-index: 30; }
 
-  /* narrow boards: small prints that open up full size when flipped */
-  .mini .card.flipped { width: var(--fw); height: var(--fh); translate: var(--fx) var(--fy); }
-  .mini .front { padding: 26px 8px 0; }
-  .mini .front .cap { height: 30px; font-size: clamp(9.5px, calc(var(--w) * .1), 15px); letter-spacing: -.01em; }
+  /* narrow boards: small prints; a tapped one opens full size in the middle of the screen */
+  .mini .front { padding: 24px 8px 0; }
+  .mini .front .cap { height: 32px; font-size: clamp(11px, calc(var(--w) * .085), 15px); letter-spacing: -.01em; }
   .mini .front .cap em { display: none; }
-  .mini .pin, .mini .card.hero .pin { width: 14px; height: 14px; margin-left: -7px; top: 8px; box-shadow: 3px 4px 4px rgba(0, 0, 0, .38), inset -1px -2px 3px rgba(0, 0, 0, .28); }
+  .mini .pin { width: 14px; height: 14px; margin-left: -7px; top: 6px; box-shadow: 3px 4px 4px rgba(0, 0, 0, .38), inset -1px -2px 3px rgba(0, 0, 0, .28); }
   .mini .face { box-shadow: 0 10px 22px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .4); }
-  .mini .card.flipped .face { box-shadow: 0 24px 60px rgba(0, 0, 0, .75), 0 0 0 1px rgba(205, 174, 116, .4); }
+  .viewer {
+    position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px;
+    background: rgba(5, 7, 14, .72); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    opacity: 0; transition: opacity .3s;
+  }
+  .viewer[hidden] { display: none; }
+  .viewer.open { opacity: 1; }
+  .viewer .card { rotate: 0deg; }
+  .viewer .face { box-shadow: 0 24px 60px rgba(0, 0, 0, .75), 0 0 0 1px rgba(205, 174, 116, .4); }
 
   .inner {
     position: absolute; inset: 0; transform-style: preserve-3d;
@@ -176,6 +195,7 @@
   .back .lock { align-self: center; font-size: 10px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
   .card.hero .face { box-shadow: 0 30px 70px rgba(0, 0, 0, .65), 0 0 0 1px rgba(205, 174, 116, .55), 0 2px 6px rgba(0, 0, 0, .4); }
   .card.hero .pin { width: 22px; height: 22px; margin-left: -11px; top: 4px; }
+  .mini .card.hero .pin { width: 16px; height: 16px; margin-left: -8px; top: 5px; }
   .back a:hover { transform: translateY(-2px); }
 
   .decks { max-width: 880px; margin: 0 auto; padding: 28px 20px 40px; text-align: center; }
@@ -193,6 +213,8 @@
   @media (prefers-reduced-motion: reduce) {
     .glow i { animation: none; }
     .card, .inner { transition-duration: .01s; }
+    .track { animation: none; }
+    .row { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
   }
 </style>
 </head>
@@ -202,8 +224,8 @@
 <header>
   <div class="eyebrow"><b></b>qwertykeypadapple · Selected work<b></b></div>
   <h1>Things I've <span class="b">built</span><span class="r">.</span></h1>
-  <p class="lede">Every project is a photo pinned to the board, slowly circling the one in the middle. Tap one to flip it over and read what it is.</p>
-  <button class="shuffle" id="shuffle" type="button">Scatter them again</button>
+  <p class="lede">Every project is a photo pinned to the board, drifting past in three rows. Tap one to flip it over and read what it is.</p>
+  <button class="shuffle" id="shuffle" type="button">Shuffle the rows</button>
 </header>
 
 <main><div class="board"><div class="table" id="table"></div></div></main>
@@ -224,7 +246,7 @@
 const GH = "https://github.com/qwertykeypadapple/";
 
 const projects = [
-  // first entry sits in the centre of the board
+  // first entry is the centre-piece: gold pin, first in the middle row
   { repo: "investor-connect", name: "Investor Connect", kind: "Web app · AI agent", img: "investor-connect.jpg", live: "https://investor-connect-051f.onrender.com/", private: true,
     text: "Paste a startup's address. An AI agent clicks through the site in a real browser, then shows what an investor sees and what to fix first." },
   { repo: "neural-debris-solution", name: "Neural Debris", kind: "Kaggle · 4th place", img: "neural-debris-solution.png",
@@ -266,23 +288,20 @@ function setFlipped(card, on) {
   card.querySelectorAll("a").forEach((a) => (a.tabIndex = on ? 0 : -1));
 }
 
-const cards = projects.map((p, i) => {
+function makeCard(i) {
+  const p = projects[i];
   const card = document.createElement("div");
   card.className = "card" + (i % 2 ? " red" : "") + (i ? "" : " hero");
   card.style.setProperty("--pin", i ? PINS[i % PINS.length] : "#c9a24f");
-  card.tabIndex = 0;
-  card.setAttribute("role", "button");
-  card.setAttribute("aria-pressed", "false");
-  card.setAttribute("aria-label", p.name + ": flip for details");
   card.innerHTML = `
     <div class="inner">
       <div class="face front">
         <i class="pin"></i>
-        <img src="images/${p.img}" alt="" loading="lazy">
+        <img src="images/${p.img}" alt="">
         <div class="cap"><span>${p.name}</span><em>${p.kind.split(" · ")[0]}</em></div>
       </div>
       <div class="face back">
-        <img class="bg" src="images/${p.img}" alt="" loading="lazy">
+        <img class="bg" src="images/${p.img}" alt="">
         <h2>${p.name}</h2>
         <div class="kind">${p.kind}</div>
         <p>${p.text}</p>
@@ -294,28 +313,10 @@ const cards = projects.map((p, i) => {
       </div>
     </div>`;
   setFlipped(card, false);
-
-  const flip = () => {
-    const on = !card.classList.contains("flipped");
-    if (table.classList.contains("mini")) {
-      // small cards open one at a time, full size, in the middle of the screen
-      cards.forEach((c) => c !== card && setFlipped(c, false));
-      const fh = parseFloat(table.style.getPropertyValue("--fh"));
-      const top = window.innerHeight / 2 - table.getBoundingClientRect().top - fh / 2;
-      card.style.setProperty("--fy", clamp(top, 0, table.clientHeight - fh) + "px");
-      deal();
-    }
-    setFlipped(card, on);
-  };
-  card.addEventListener("click", (e) => { if (!e.target.closest("a")) flip(); });
-  card.addEventListener("keydown", (e) => {
-    if ((e.key === "Enter" || e.key === " ") && e.target === card) { e.preventDefault(); flip(); }
-  });
-  table.appendChild(card);
   return card;
-});
+}
 
-// small seeded random, so a layout stays put across resizes until reshuffled
+// small seeded random, so the rows stay put across resizes until reshuffled
 function rng(seed) {
   return () => {
     seed = (seed + 0x6d2b79f5) | 0;
@@ -324,170 +325,114 @@ function rng(seed) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-
 let seed = 7;
 
-const PIN_Y = 15, CLEAR = 14;
+const ROWS = 3;
+const MINI_BELOW = 700;     // board width under which prints are small and open in a viewer
+const PX_PER_SECOND = 22;   // drift speed
 const heightFor = (w) => Math.round(w * 0.72) + 84;
-const miniHeightFor = (w) => Math.round((w - 16) * 0.75) + 56; // thinner border, shorter caption
-const MINI_BELOW = 800; // board width under which the ring uses small cards
+const miniHeightFor = (w) => Math.round((w - 16) * 0.75) + 56;
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
-// A pin may only touch its own card. Cards turn about their pin, so the pin
-// point is fixed; test it against every other card, both tilted and straight
-// (a flipped card straightens).
-function covers(c, px, py, deg) {
-  const cx = c.x + c.w / 2, cy = c.y + PIN_Y, a = (-deg * Math.PI) / 180;
-  const dx = px - cx, dy = py - cy;
-  const lx = cx + dx * Math.cos(a) - dy * Math.sin(a);
-  const ly = cy + dx * Math.sin(a) + dy * Math.cos(a);
-  return lx > c.x - CLEAR && lx < c.x + c.w + CLEAR && ly > c.y - CLEAR && ly < c.y + c.h + CLEAR;
+// Phones: a tapped print opens full size over the page, then flips.
+const viewer = document.createElement("div");
+viewer.className = "viewer";
+viewer.hidden = true;
+document.body.appendChild(viewer);
+function openViewer(i) {
+  const fw = Math.min(300, window.innerWidth - 32);
+  const card = makeCard(i);
+  card.style.setProperty("--w", fw + "px");
+  card.style.setProperty("--h", heightFor(fw) + "px");
+  card.tabIndex = 0;
+  card.setAttribute("role", "button");
+  card.setAttribute("aria-label", projects[i].name + ": tap to close");
+  viewer.replaceChildren(card);
+  viewer.hidden = false;
+  document.body.classList.add("viewing");
+  requestAnimationFrame(() => requestAnimationFrame(() => { viewer.classList.add("open"); setFlipped(card, true); card.focus({ preventScroll: true }); }));
 }
-// Wide boards: the first project sits in the centre and the rest orbit it.
-const TILT = 7;          // most a ring card leans, in degrees
-const LAP_SECONDS = 110; // one full trip round the board
+function closeViewer() {
+  if (viewer.hidden) return;
+  const card = viewer.firstChild;
+  if (card) setFlipped(card, false);
+  viewer.classList.remove("open");
+  document.body.classList.remove("viewing");
+  setTimeout(() => { if (!viewer.classList.contains("open")) { viewer.hidden = true; viewer.replaceChildren(); } }, 450);
+}
+viewer.addEventListener("click", (e) => { if (!e.target.closest("a")) closeViewer(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeViewer(); });
 
-// An oval as points evenly spaced by distance, so cards keep even gaps as they travel.
-function ovalPath(cx, cy, a, b) {
-  const N = 1440, raw = [], cum = [0];
-  for (let i = 0; i <= N; i++) {
-    const t = (2 * Math.PI * i) / N - Math.PI / 2;
-    raw.push([cx + a * Math.cos(t), cy + b * Math.sin(t)]);
-    if (i) cum.push(cum[i - 1] + Math.hypot(raw[i][0] - raw[i - 1][0], raw[i][1] - raw[i - 1][1]));
-  }
-  const total = cum[N], pts = [];
-  for (let m = 0, i = 0; m < N; m++) {
-    const target = (m * total) / N;
-    while (cum[i + 1] < target) i++;
-    const t = (target - cum[i]) / (cum[i + 1] - cum[i]);
-    pts.push([raw[i][0] + (raw[i + 1][0] - raw[i][0]) * t, raw[i][1] + (raw[i + 1][1] - raw[i][1]) * t]);
-  }
-  return { pts, total };
-}
-// where a card is after travelling `frac` of a lap (0 to 1)
-function pointAt(path, frac) {
-  const n = path.pts.length, f = (((frac % 1) + 1) % 1) * n;
-  const i = Math.floor(f) % n, t = f - Math.floor(f);
-  const p = path.pts[i], q = path.pts[(i + 1) % n];
-  return [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
-}
-// true when no pin touches a second card at any moment of the orbit, whatever the lean
-function orbitClear(path, n, hero, w, h) {
-  for (let q = 0; q < 48; q++) {
-    const all = [hero];
-    for (let j = 0; j < n; j++) {
-      const [px, py] = pointAt(path, (j + q / 48) / n);
-      all.push({ x: px - w / 2, y: py - h / 2, w, h });
-    }
-    for (const a of all) for (const b of all) {
-      if (a === b) continue;
-      const px = a.x + a.w / 2, py = a.y + PIN_Y;
-      if (covers(b, px, py, TILT) || covers(b, px, py, -TILT) || covers(b, px, py, 0)) return false;
-    }
-  }
-  return true;
-}
-function ring(W, n) {
-  const mini = W < MINI_BELOW;
-  const sizeH = mini ? miniHeightFor : heightFor;
-  const w = mini ? clamp(W * 0.29, 84, 190) : clamp(W * 0.2, 230, 260), h = sizeH(w);
-  const a = (W - w) / 2 - (mini ? 8 : 16), cx = W / 2;
-  // the centre card is a little larger, as far as the gap inside the ring allows
-  const wc = Math.round(Math.min(w * (mini ? 1.2 : 1.25), 2 * (a - 10) - w)), hc = sizeH(wc);
-  let b = (h + hc) / 2 + 24, hero, path;
-  // stretch the oval until the pins stay clear all the way round
-  for (let attempt = 0; attempt < 80; attempt++, b += 16) {
-    const cy = b + h / 2 + 34;
-    hero = { x: cx - wc / 2, y: cy - hc / 2, w: wc, h: hc };
-    path = ovalPath(cx, cy, a, b);
-    if (orbitClear(path, n, hero, w, h)) break;
-  }
-  return { hero, path, w, h, height: 2 * b + h + 34 };
-}
-
-let orbit = null; // { path, items: [{ card, at, w, h }] }
-let lap = 0;      // how far round the orbit has turned, 0 to 1
-
-function placeOrbit() {
-  for (const it of orbit.items) {
-    const [px, py] = pointAt(orbit.path, it.at + lap);
-    it.card.style.setProperty("--x", px - it.w / 2 + "px");
-    it.card.style.setProperty("--y", py - it.h / 2 + "px");
-  }
-}
-
-function setCard(card, c, z) {
-  const s = card.style;
-  s.setProperty("--w", c.w + "px");
-  s.setProperty("--h", c.h + "px");
-  if (c.x !== undefined) { s.setProperty("--x", c.x + "px"); s.setProperty("--y", c.y + "px"); }
-  s.setProperty("--r", c.r.toFixed(1) + "deg");
-  s.setProperty("--z", z);
-}
-
-// let the cards glide to their new places, then hand them back to the orbit
-let dealTimer;
-function deal() {
-  table.classList.add("dealing");
-  clearTimeout(dealTimer);
-  dealTimer = setTimeout(() => table.classList.remove("dealing"), 800);
-}
-
-function scatter() {
+function build() {
   const rand = rng(seed);
   const W = table.clientWidth;
-  deal();
+  const mini = W < MINI_BELOW;
+  table.classList.toggle("mini", mini);
+  const w = Math.round(mini ? clamp(W * 0.4, 130, 190) : clamp(W * 0.19, 230, 250));
+  const h = mini ? miniHeightFor(w) : heightFor(w);
+  const gapX = mini ? 22 : 36;
+  table.style.setProperty("--gap-x", gapX + "px");
+  table.style.setProperty("--gap-y", (mini ? 4 : 10) + "px");
 
-  // the centre card stays put; the others are dealt in a random order
-  const order = cards.slice(1);
+  // deal the projects into rows, the centre-piece first in the middle row
+  const order = projects.map((_, i) => i).slice(1);
   for (let i = order.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
     [order[i], order[j]] = [order[j], order[i]];
   }
-  const n = order.length;
+  order.splice(Math.floor((order.length + 1) / 2), 0, 0);
+  const rows = Array.from({ length: ROWS }, () => []);
+  order.forEach((idx, k) => rows[Math.floor((k * ROWS) / order.length)].push(idx));
 
-  // on narrow boards the cards are small, and grow to this size when flipped
-  table.classList.toggle("mini", W < MINI_BELOW);
-  const fw = Math.min(300, W - 16);
-  table.style.setProperty("--fw", fw + "px");
-  table.style.setProperty("--fh", heightFor(fw) + "px");
-  table.style.setProperty("--fx", (W - fw) / 2 + "px");
-
-  const R = ring(W, n);
-  setCard(cards[0], { ...R.hero, r: (rand() - 0.5) * 4 }, 10);
-  orbit = {
-    path: R.path,
-    items: order.map((card, j) => {
-      setCard(card, { w: R.w, h: R.h, r: (rand() - 0.5) * 2 * TILT }, 1 + Math.floor(rand() * 9));
-      return { card, at: j / n, w: R.w, h: R.h };
-    }),
-  };
-  placeOrbit();
-  table.style.height = R.height + 40 + "px";
+  table.replaceChildren();
+  rows.forEach((items, r) => {
+    const row = document.createElement("div");
+    row.className = "row" + (r % 2 ? " rev" : "");
+    const track = document.createElement("div");
+    track.className = "track";
+    // one set of prints is this wide; repeat it until the row can loop without a gap
+    const setW = items.length * (w + gapX);
+    const copies = Math.max(2, Math.ceil(W / setW) + 1);
+    const tilts = items.map(() => ((rand() - 0.5) * 6).toFixed(1) + "deg");
+    for (let c = 0; c < copies; c++) {
+      items.forEach((idx, k) => {
+        const card = makeCard(idx);
+        card.style.setProperty("--w", w + "px");
+        card.style.setProperty("--h", h + "px");
+        card.style.setProperty("--r", tilts[k]);
+        if (c === 0) {
+          card.tabIndex = 0;
+          card.setAttribute("role", "button");
+          card.setAttribute("aria-label", projects[idx].name + ": flip for details");
+        } else {
+          card.setAttribute("aria-hidden", "true"); // a repeat, for the loop
+          card.querySelectorAll("a").forEach((a) => (a.tabIndex = -1));
+        }
+        const flip = () => {
+          if (mini) return openViewer(idx);
+          setFlipped(card, !card.classList.contains("flipped"));
+        };
+        card.addEventListener("click", (e) => { if (!e.target.closest("a")) flip(); });
+        card.addEventListener("keydown", (e) => {
+          if ((e.key === "Enter" || e.key === " ") && e.target === card) { e.preventDefault(); flip(); }
+        });
+        track.appendChild(card);
+      });
+    }
+    track.style.setProperty("--shift", setW + "px");
+    // rows drift at slightly different speeds, and start at different points
+    const secs = (setW / PX_PER_SECOND) * (1 + r * 0.12);
+    track.style.setProperty("--secs", secs.toFixed(1) + "s");
+    track.style.animationDelay = (-rand() * secs).toFixed(1) + "s";
+    row.appendChild(track);
+    table.appendChild(row);
+  });
 }
-
-// The orbit rests while a card is being read (flipped), pointed at, or dealt.
-const stillPlease = window.matchMedia("(prefers-reduced-motion: reduce)");
-// a touch screen keeps reporting :hover after a tap, so only a real pointer counts
-const resting = window.matchMedia("(hover: hover)").matches
-  ? ".card.flipped, .card:hover, .card:focus-visible"
-  : ".card.flipped, .card:focus-visible";
-let lastTick = 0;
-function tick(now) {
-  const dt = Math.min(100, now - lastTick);
-  lastTick = now;
-  if (orbit && !stillPlease.matches && !table.classList.contains("dealing") && !table.querySelector(resting)) {
-    lap = (lap + dt / (LAP_SECONDS * 1000)) % 1;
-    placeOrbit();
-  }
-  requestAnimationFrame(tick);
-}
-requestAnimationFrame(tick);
 
 document.getElementById("shuffle").addEventListener("click", () => {
   seed = (Math.random() * 1e9) | 0;
-  cards.forEach((c) => setFlipped(c, false));
-  scatter();
+  closeViewer();
+  build();
 });
 
 // phones fire resize when the address bar slides away; only a width change needs a new layout
@@ -495,9 +440,9 @@ let lastWidth = table.clientWidth;
 window.addEventListener("resize", () => {
   if (table.clientWidth === lastWidth) return;
   lastWidth = table.clientWidth;
-  scatter();
+  build();
 });
-scatter();
+build();
 </script>
 </body>
 </html>
