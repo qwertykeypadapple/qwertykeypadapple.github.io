@@ -458,7 +458,6 @@ const coverTex = (p, D) => tex(256, 360, (g, w, h) => {
 });
 const pagesTex = tex(64, 64, (g) => { g.fillStyle = "#f4ecd9"; g.fillRect(0, 0, 64, 64); g.fillStyle = "rgba(120,100,70,.18)"; for (let i = 0; i < 64; i += 3) g.fillRect(0, i, 64, 1); });
 const pagesMat = M({ map: pagesTex, roughness: .9 });
-const fillers = ["#5b4636", "#7d6a55", "#3e4a5c", "#8b7a5e", "#6a3f3a", "#4b5a48", "#a08867", "#2f3a4a"];
 
 function makeBook(p, D, h, t, wDepth) {
   // local frame: cover faces +z, spine on -x; on the shelf the book is turned so the spine faces the room
@@ -476,18 +475,17 @@ function makeBook(p, D, h, t, wDepth) {
 }
 
 rows.forEach((row, ri) => {
-  const y = SHELF.ys[ri === 0 ? 2 : 1];
-  let x = -SHELF.w / 2 + .3, lastDom = null;
+  const y = SHELF.ys[ri === 0 ? 2 : 1], GAP = .4;
+  // only the project books, centred on the shelf, with a gap between fields
+  const sizes = row.map(() => ({ h: .86 + Math.random() * .1, t: .26 + Math.random() * .07 }));
+  const width = sizes.reduce((a, z) => a + z.t + .02, 0) + GAP * (new Set(row.map((p) => p.dom)).size - 1);
+  let x = -width / 2, lastDom = null;
   const plaques = [];
-  row.forEach((p) => {
-    const D = DOMAINS[p.dom];
-    if (lastDom && lastDom !== p.dom) {             // a couple of plain books between fields
-      for (let i = 0; i < 2; i++) { const t = .14 + Math.random() * .1, h = .62 + Math.random() * .2; box(t, h, .6, M({ color: fillers[(Math.random() * fillers.length) | 0], roughness: .8 }), x + t / 2, y + h / 2, -.05, sg); x += t + .015; }
-      x += .05;
-    }
+  row.forEach((p, i) => {
+    const D = DOMAINS[p.dom], { h, t } = sizes[i];
+    if (lastDom && lastDom !== p.dom) x += GAP;
     if (lastDom !== p.dom) plaques.push({ dom: p.dom, x0: x });
     lastDom = p.dom;
-    const h = .86 + Math.random() * .1, t = .26 + Math.random() * .07;
     const b = makeBook(p, D, h, t, .62);
     b.rotation.y = Math.PI / 2;
     b.position.set(x + t / 2, y + h / 2, 0);
@@ -498,23 +496,17 @@ rows.forEach((row, ri) => {
     plaques[plaques.length - 1].x1 = x + t;
     x += t + .02;
   });
-  // fill the rest of the shelf with plain books, one lying flat
-  while (x < SHELF.w / 2 - .4) { const t = .12 + Math.random() * .12, h = .55 + Math.random() * .3; box(t, h, .6, M({ color: fillers[(Math.random() * fillers.length) | 0], roughness: .8 }), x + t / 2, y + h / 2, -.05, sg); x += t + .012; }
   // small brass plaques naming each field
   plaques.forEach(({ dom, x0, x1 }) => {
     const D = DOMAINS[dom], w = Math.max(.7, x1 - x0);
     box(w, .13, .02, M({ map: tex(512, 64, (g) => { g.fillStyle = "#c9a24f"; g.fillRect(0, 0, 512, 64); g.fillStyle = "#3a2a10"; g.font = "600 30px Inter, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(D.label.toUpperCase(), 256, 34); }), metalness: .6, roughness: .35 }), (x0 + x1) / 2, y - .04, SHELF.d / 2 + .012, sg);
   });
 });
-// top and bottom shelves: plain books and a few objects
-[SHELF.ys[0], SHELF.ys[3]].forEach((y, k) => {
-  let x = -SHELF.w / 2 + .3;
-  while (x < SHELF.w / 2 - .3) {
-    if (Math.random() < .12) { const n = 3 + (Math.random() * 3 | 0); for (let i = 0; i < n; i++) box(.7, .1, .55, M({ color: fillers[(Math.random() * 8) | 0] }), x + .35, y + .05 + i * .1, -.05, sg); x += .85; continue; }
-    if (k === 1 && Math.random() < .08) { const v = new THREE.Mesh(new THREE.CylinderGeometry(.14, .2, .6, 24), M({ color: "#2b4597", roughness: .3 })); v.position.set(x + .2, y + .3, 0); v.castShadow = true; sg.add(v); x += .5; continue; }
-    const t = .12 + Math.random() * .14, h = .5 + Math.random() * .4; box(t, h, .6, M({ color: fillers[(Math.random() * fillers.length) | 0], roughness: .8 }), x + t / 2, y + h / 2, -.05, sg); x += t + .012;
-  }
-});
+// the top and bottom shelves keep just a vase and a small plant
+const vase = new THREE.Mesh(new THREE.CylinderGeometry(.16, .22, .7, 28), M({ color: "#2b4597", roughness: .3 })); vase.position.set(2.6, SHELF.ys[3] + .35, 0); vase.castShadow = true; sg.add(vase);
+const sprout = new THREE.Group(); sprout.position.set(-2.8, SHELF.ys[0], 0); sg.add(sprout);
+const sp = new THREE.Mesh(new THREE.CylinderGeometry(.18, .14, .34, 24), M({ color: "#b5683a" })); sp.position.y = .17; sp.castShadow = true; sprout.add(sp);
+for (let i = 0; i < 6; i++) { const leaf = new THREE.Mesh(new THREE.SphereGeometry(.14, 10, 8), M({ color: i % 2 ? "#2f7a4c" : "#3c8f5a" })); const a = i / 6 * Math.PI * 2; leaf.position.set(Math.cos(a) * .1, .45 + (i % 2) * .12, Math.sin(a) * .1); leaf.scale.set(.8, 1.3, .8); leaf.castShadow = true; sprout.add(leaf); }
 
 // ---------------- the vision: a glowing window onto the site ----------------
 const visionG = new THREE.Group(); scene.add(visionG); visionG.visible = false;
