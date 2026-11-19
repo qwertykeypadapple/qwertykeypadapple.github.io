@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>qwertykeypadapple · Projects</title>
-<meta name="description" content="One small 3D world for each field: fintech, federated learning, batteries, health and more. Tap a model to see the project.">
+<meta name="description" content="A 3D study where every project is a book on the shelf. Open one and its website rises out of the pages.">
 <script>try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}</script>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -123,106 +123,79 @@
   .theme svg { width: 19px; height: 19px; }
   .theme .sun, :root[data-theme="dark"] .theme .moon { display: none; }
   :root[data-theme="dark"] .theme .sun { display: block; }
-  /* ---------- one small 3D world per domain ---------- */
-  .worlds, .decks-head { position: relative; z-index: 1; }
-  .worlds { max-width: 1240px; margin: 0 auto; padding: 8px 20px 30px; display: flex; flex-direction: column; gap: 26px; }
-  .domain {
-    display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); align-items: center; gap: 18px 36px;
-    --plate: color-mix(in srgb, var(--dc) 16%, #f8f4eb);
-    --edge: color-mix(in srgb, var(--dc) 78%, #000);
+  /* ---------- the study: one three.js room, every project a book ---------- */
+  .room-wrap { position: relative; z-index: 1; max-width: 1440px; margin: 0 auto; padding: 6px 16px 10px; }
+  .room {
+    position: relative; height: min(80vh, 780px); min-height: 460px; border-radius: 18px; overflow: hidden;
+    background: radial-gradient(120% 90% at 40% 30%, #efe4d0, #d9c7aa); box-shadow: 0 30px 70px rgba(60, 40, 20, .22), 0 0 0 1px rgba(205, 174, 116, .35);
+    touch-action: pan-y; user-select: none; -webkit-user-select: none;
   }
-  :root[data-theme="dark"] .domain { --plate: color-mix(in srgb, var(--dc) 34%, #10131e); --edge: color-mix(in srgb, var(--dc) 55%, #000); }
-  .domain.flip { grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr); }
-  .domain.flip .stage { order: 2; }
-  .stage { position: relative; height: calc(560px * var(--s, 1)); perspective: 1700px; perspective-origin: 50% 20%; touch-action: pan-y; }
-  .fit {
-    position: absolute; left: 50%; top: 50%; margin: -210px 0 0 -280px;
-    width: 560px; height: 420px; transform-style: preserve-3d;
-    transform: scale(var(--s, 1)) rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg));
-    transition: transform .5s cubic-bezier(.2, .8, .2, 1);
+  :root[data-theme="dark"] .room { background: radial-gradient(120% 90% at 40% 30%, #26283a, #0f1120); box-shadow: 0 30px 70px rgba(0, 0, 0, .6), 0 0 0 1px rgba(205, 174, 116, .25); }
+  .room canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .room.hot { cursor: pointer; }
+  .room .hint {
+    position: absolute; left: 50%; top: 16px; translate: -50% 0; padding: 7px 14px; border-radius: 999px; pointer-events: none;
+    font: 500 12.5px var(--sans); color: #3a3226; background: rgba(255, 252, 245, .78); box-shadow: 0 4px 14px rgba(0, 0, 0, .12);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); transition: opacity .5s; white-space: nowrap;
   }
-  .world { position: relative; width: 560px; height: 420px; transform-style: preserve-3d; transform: rotateX(58deg) rotateZ(-40deg); animation: sway 16s ease-in-out infinite alternate; }
-  @keyframes sway { from { transform: rotateX(58deg) rotateZ(-46deg); } to { transform: rotateX(58deg) rotateZ(-34deg); } }
-  .world div, .world i, .world b { position: absolute; display: block; transform-style: preserve-3d; }
-  .world i { backface-visibility: visible; }
+  .room.open .hint { opacity: 0; }
+  .room .tip {
+    position: absolute; left: 0; top: 0; pointer-events: none; padding: 6px 11px; border-radius: 10px; white-space: nowrap;
+    font: 600 12.5px/1.25 var(--sans); color: #fff; background: var(--dc, #333); box-shadow: 0 8px 18px rgba(0, 0, 0, .25);
+    opacity: 0; transition: opacity .2s; translate: -50% calc(-100% - 14px);
+  }
+  .room .tip small { display: block; font-weight: 500; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
+  .room .tip.on { opacity: 1; }
 
-  /* a project's model: lifts when picked or pointed at */
-  /* the world's own planes sit in the 3D scene too; let clicks through to the models */
-  .fit, .world, .world div, .world i { pointer-events: none; }
-  .world .m, .world .m div, .world .m i { pointer-events: auto; }
-  .m { left: 0; top: 0; cursor: pointer; transform: translate3d(var(--mx), var(--my), var(--lift, 0px)); transition: transform .45s cubic-bezier(.2, .9, .3, 1.3); }
-  .m:hover { --lift: 10px; }
-  .m.on { --lift: 18px; }
-  /* things that stand up and face the viewer */
-  .bb { transform-origin: 50% 100%; }
-  .tag {
-    white-space: nowrap; padding: 5px 11px; border-radius: 999px; font: 600 12px/1 var(--sans); letter-spacing: .02em;
-    color: #fff; background: var(--dc); box-shadow: 0 6px 14px rgba(0, 0, 0, .25); transition: background .3s, color .3s;
+  /* the card that comes with a vision */
+  .vision {
+    position: absolute; left: 22px; bottom: 22px; width: min(360px, calc(100% - 44px)); padding: 18px 20px 18px;
+    border-radius: 16px; color: #1c2033; background: rgba(255, 252, 246, .9); box-shadow: 0 20px 50px rgba(0, 0, 0, .28), 0 0 0 1px color-mix(in srgb, var(--dc) 40%, transparent);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    opacity: 0; translate: 0 16px; pointer-events: none; transition: opacity .45s .35s, translate .45s .35s;
   }
-  .m:not(.on) .tag { background: color-mix(in srgb, var(--bg) 88%, var(--dc)); color: var(--dc); box-shadow: 0 0 0 1px color-mix(in srgb, var(--dc) 40%, transparent), 0 6px 14px rgba(0, 0, 0, .12); }
-
-  /* little motions */
-  .bob { animation: bob 3.2s ease-in-out infinite; }
-  @keyframes bob { 50% { translate: 0 0 10px; } }
-  .wave { animation: wave 2.4s ease-in-out infinite; }
-  @keyframes wave { 50% { translate: 0 0 14px; } }
-  .blink > i, .blink > .bb { animation: blink 2.2s steps(1) infinite; animation-delay: inherit; }
-  @keyframes blink { 50% { opacity: .18; } }
-  .pulse { animation: pulse 2.4s ease-in-out infinite; }
-  @keyframes pulse { 50% { scale: 1.12; } }
-  .spin { animation: spin 18s linear infinite; }
-  @keyframes spin { to { rotate: z 360deg; } }
-  .fill { animation: fill 5s ease-in-out infinite alternate; }
-  @keyframes fill { from { width: 22%; } to { width: 86%; } }
-  .domain:not(.live) .world, .domain:not(.live) .world * { animation-play-state: paused !important; }
-
-  /* the words beside each world */
-  .info { min-width: 0; }
-  .info .no { font: 600 11px var(--sans); letter-spacing: .26em; text-transform: uppercase; color: var(--dc); }
-  :root[data-theme="dark"] .info .no { color: color-mix(in srgb, var(--dc) 55%, #fff); }
-  .info h2 { margin: 10px 0 18px; font: 400 clamp(36px, 5vw, 58px)/1 var(--serif); letter-spacing: -.02em; }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
-  .chips button {
-    padding: 8px 14px; border-radius: 999px; cursor: pointer; font: 500 13px var(--sans); color: var(--fg);
-    border: 1px solid color-mix(in srgb, var(--dc) 45%, transparent); background: color-mix(in srgb, var(--dc) 7%, transparent); transition: background .2s, color .2s;
-  }
-  .chips button.on { background: var(--dc); border-color: var(--dc); color: #fff; }
-  .chips button:focus-visible, .pick a:focus-visible { outline: 2px solid var(--dc); outline-offset: 3px; }
-  .pick { border-left: 2px solid var(--dc); padding: 2px 0 2px 18px; }
-  .pick .kind { font: 600 10.5px var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--fg-muted); }
-  .pick h3 { margin: 6px 0 8px; font: 500 26px/1.1 var(--serif); }
-  .pick .q { margin: 0 0 16px; font: 400 19px/1.3 var(--serif); color: var(--fg-muted); }
-  .pick .q em { color: var(--dc); }
-  :root[data-theme="dark"] .pick .q em { color: color-mix(in srgb, var(--dc) 50%, #fff); }
-  .pick .links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  .pick a {
+  .room.open .vision { opacity: 1; translate: 0 0; pointer-events: auto; }
+  .vision .dom { display: flex; align-items: center; gap: 8px; font: 600 10.5px var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--dc); }
+  .vision .dom i { width: 9px; height: 9px; border-radius: 50%; background: var(--dc); }
+  .vision h3 { margin: 8px 0 6px; font: 500 28px/1.05 var(--serif); letter-spacing: -.01em; }
+  .vision .q { margin: 0 0 14px; font: 400 17px/1.3 var(--serif); color: #555a6b; }
+  .vision .q em { color: var(--dc); }
+  .vision .links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .vision a {
     padding: 8px 15px; border-radius: 999px; font: 600 12.5px var(--sans); letter-spacing: .03em; text-decoration: none;
     color: #fff; background: var(--dc); border: 1px solid var(--dc); transition: transform .15s;
   }
-  .pick a.ghost { color: var(--fg); background: transparent; border-color: color-mix(in srgb, var(--dc) 50%, transparent); }
-  .pick a:hover { transform: translateY(-2px); }
-  .pick .lock { font: 600 10.5px var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--fg-muted); }
-  .pick.swap { animation: swap .35s ease-out; }
-  @keyframes swap { from { opacity: 0; transform: translateY(6px); } }
-
-  .decks-head { text-align: center; margin: 40px auto 0; padding: 0 20px; }
-  .decks-head h2 { margin: 18px 0 6px; font: 400 clamp(30px, 5vw, 44px) var(--serif); letter-spacing: -.01em; }
-  .decks-head p { margin: 0 auto; max-width: 440px; color: var(--fg-muted); font-size: 15px; line-height: 1.6; }
-
-  @media (max-width: 860px) {
-    .domain, .domain.flip { grid-template-columns: minmax(0, 1fr); gap: 0; }
-    .domain.flip .stage { order: 0; }
-    .info { padding: 0 4px; }
-    .info h2 { margin-bottom: 14px; }
+  .vision a.ghost { color: #1c2033; background: transparent; border-color: color-mix(in srgb, var(--dc) 50%, transparent); }
+  .vision a:hover { transform: translateY(-2px); }
+  .vision .lock { font: 600 10.5px var(--sans); letter-spacing: .16em; text-transform: uppercase; color: #7a7466; }
+  .vision .x {
+    position: absolute; right: 12px; top: 12px; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, .12); background: #fff; color: #333; font: 400 20px/1 var(--sans); display: grid; place-items: center;
   }
-  .tag { position: absolute; left: 0; top: 0; transform: translate(-50%, -100%); }
+  .vision a:focus-visible, .vision .x:focus-visible, .shelf-index button:focus-visible { outline: 2px solid var(--dc, #9a7636); outline-offset: 3px; }
 
+  /* the same books as a plain list, for keyboards and small screens */
+  .shelf-index { max-width: 1100px; margin: 18px auto 0; padding: 0 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; }
+  .shelf-index .grp { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .shelf-index .grp > span { font: 600 10.5px var(--sans); letter-spacing: .18em; text-transform: uppercase; color: var(--dc); margin-right: 2px; }
+  :root[data-theme="dark"] .shelf-index .grp > span { color: color-mix(in srgb, var(--dc) 55%, #fff); }
+  .shelf-index button {
+    padding: 6px 12px; border-radius: 999px; cursor: pointer; font: 500 12.5px var(--sans); color: var(--fg);
+    border: 1px solid color-mix(in srgb, var(--dc) 45%, transparent); background: color-mix(in srgb, var(--dc) 8%, transparent);
+  }
+  .shelf-index button:hover { background: var(--dc); color: #fff; }
+
+  @media (max-width: 700px) {
+    .room { height: 76vh; min-height: 420px; border-radius: 14px; }
+    .vision { left: 12px; right: 12px; bottom: 12px; width: auto; padding: 14px 16px; }
+    .vision h3 { font-size: 23px; }
+    .vision .q { font-size: 15px; margin-bottom: 10px; }
+    .room .hint { font-size: 11.5px; }
+  }
   footer { text-align: center; padding: 10px 20px 52px; color: var(--fg-muted); font-size: 13px; letter-spacing: .02em; }
   footer a { color: var(--accent-soft); text-underline-offset: 3px; }
   @media (prefers-reduced-motion: reduce) {
     .glow i { animation: none; }
-    .world, .world * { animation: none !important; }
-    .m, .fit { transition: none; }
   }
 </style>
 </head>
@@ -236,17 +209,26 @@
 <header>
   <div class="eyebrow"><b></b>qwertykeypadapple · Selected work<b></b></div>
   <h1>Things I've <span class="b">built</span><span class="r">.</span></h1>
-  <p class="lede">One small world for each field I work in. Tap a model to see what it is.</p>
+  <p class="lede">Every project is a book on this shelf. Pick one: it opens, and its website rises out of the pages.</p>
 </header>
 
-<main class="worlds" id="worlds"></main>
-
-<section class="decks-head" id="pitch-decks">
-  <div class="eyebrow"><b></b>Pitch decks<b></b></div>
-  <h2>The pitches.</h2>
-  <p>Each deck is a stack of slides. Tap one, then open it.</p>
-</section>
-<div class="worlds" id="decks"></div>
+<main class="room-wrap">
+  <div class="room" id="room" role="region" aria-label="A 3D study with a bookshelf; each coloured book is a project">
+    <div class="hint">Tap a coloured book to open it</div>
+    <div class="tip"></div>
+    <div class="vision" role="dialog" aria-label="Project preview"><button class="x" type="button" aria-label="Close">×</button></div>
+  </div>
+  <nav class="shelf-index" aria-label="All projects">
+  <div class="grp" style="--dc:#1d6b50"><span>Fintech</span><button type="button" data-name="Investor Connect">Investor Connect</button><button type="button" data-name="FedAML Pitch">FedAML Pitch</button><button type="button" data-name="FedAML Results">FedAML Results</button></div>
+  <div class="grp" style="--dc:#6b3d97"><span>Federated learning</span><button type="button" data-name="FedPBC Demo">FedPBC Demo</button><button type="button" data-name="Federation Quest">Federation Quest</button><button type="button" data-name="FedMSE Arcade">FedMSE Arcade</button><button type="button" data-name="FLPro">FLPro</button></div>
+  <div class="grp" style="--dc:#2b4597"><span>Algorithms</span><button type="button" data-name="Neural Debris">Neural Debris</button></div>
+  <div class="grp" style="--dc:#b0592c"><span>Automotive & batteries</span><button type="button" data-name="Battery Analytics">Battery Analytics</button><button type="button" data-name="Battery Pitch">Battery Pitch</button></div>
+  <div class="grp" style="--dc:#17707c"><span>Health & law</span><button type="button" data-name="DocLaw">DocLaw</button></div>
+  <div class="grp" style="--dc:#a3263d"><span>Social & games</span><button type="button" data-name="Nukkad AI">Nukkad AI</button><button type="button" data-name="Daily Mind">Daily Mind</button><button type="button" data-name="PokéWords">PokéWords</button></div>
+  <div class="grp" style="--dc:#94701c"><span>Hardware & learning</span><button type="button" data-name="Logic Bench">Logic Bench</button></div>
+  <div class="grp" style="--dc:#4f5a68"><span>Industrial</span><button type="button" data-name="Bearing Collective">Bearing Collective</button><button type="button" data-name="Ask the Vibration">Ask the Vibration</button></div>
+  </nav>
+</main>
 
 <footer>All code lives on <a href="https://github.com/qwertykeypadapple">github.com/qwertykeypadapple</a></footer>
 
@@ -278,14 +260,6 @@ const projects = [
     text: "Picks federated-learning clients by how fast they improve the model, not by how high their loss is, so noisy-label clients can't fool it.",
     q: "Who should a model <em>learn</em> from?",
     a: "Not whoever looks worst: <b>whoever is improving</b>. Noise can't fake progress." },
-  { repo: "fedbank-india", name: "Anvay", dom: "fintech", kind: "Website", img: "fedbank-india.jpg", live: "https://qwertykeypadapple.github.io/fedbank-india/",
-    text: "Federated learning pitched to Indian banks: a four-faced cube covering the DPDP and RBI rules, with a live federated-averaging demo.",
-    q: "Can banks fight fraud <em>together</em>?",
-    a: "They share what they learn, <b>never customer data</b>. Built for India's rules." },
-  { repo: "samhita-health", name: "Samhita Health", dom: "health", kind: "Website", img: "samhita-health.jpg", live: "https://qwertykeypadapple.github.io/samhita-health/",
-    text: "Federated learning for Indian hospitals: train on many hospitals' data while every record stays in place, plus a DPDP compliance hub.",
-    q: "Can hospitals learn without <em>moving</em> records?",
-    a: "Federated learning for Indian hospitals: <b>every record stays put</b>." },
   { repo: "doclaw-app", name: "DocLaw", dom: "health", kind: "Mobile app", img: "doclaw-app.png", private: true,
     text: "An offline PDF assistant for doctors and lawyers. It shows the exact text and highlights first, and explains only when asked, all on the device.",
     q: "What does this contract <em>actually</em> say?",
@@ -343,288 +317,6 @@ const DOMAINS = {
   industry: { tag: "Industrial", label: "Industrial", c: "#4f5a68", d: "#1f252d" },
   edu:     { tag: "Hardware", label: "Hardware & learning", c: "#94701c", d: "#43300a" },
 };
-// ---------- a tiny CSS 3D kit ----------
-// The world is a 560 x 420 floor seen from above at an angle; x runs right, y runs down the floor, z is up.
-const TILT_X = 58, TURN_Z = -40;
-const shade = (c, k) => `color-mix(in srgb, ${c} ${100 - k}%, #000)`;
-const el = (parent, cls, style) => { const d = document.createElement("div"); if (cls) d.className = cls; if (style) d.style.cssText = style; parent.appendChild(d); return d; };
-
-// a box: x, y on the floor, z off the floor; w along x, d along y, h up. Faces: top, south, west, east, north.
-function box(p, x, y, z, w, d, h, col, o = {}) {
-  const b = el(p, "", `left:0;top:0;width:${w}px;height:${d}px;transform:translate3d(${x}px,${y}px,${z}px)`);
-  const face = (style, bg) => { const f = document.createElement("i"); f.style.cssText = style + `;background:${bg}`; b.appendChild(f); return f; };
-  face(`left:0;top:${d - h}px;width:${w}px;height:${h}px;transform-origin:50% 100%;transform:rotateX(-90deg)`, o.south || shade(col, 14));
-  face(`left:${-h}px;top:0;width:${h}px;height:${d}px;transform-origin:100% 50%;transform:rotateY(90deg)`, o.west || shade(col, 28));
-  face(`left:${w}px;top:0;width:${h}px;height:${d}px;transform-origin:0 50%;transform:rotateY(-90deg)`, shade(col, 34));
-  face(`left:0;top:0;width:${w}px;height:${h}px;transform-origin:50% 0;transform:rotateX(90deg)`, shade(col, 22));
-  const top = face(`left:0;top:0;width:${w}px;height:${d}px;transform:translateZ(${h}px)`, o.top || col);
-  if (o.topHTML) top.innerHTML = o.topHTML;
-  if (o.cls) b.className = o.cls;
-  return b;
-}
-// something that always stands up and faces you (a sphere, a sign, a bubble)
-function bb(p, x, y, z, w, h, style = "", cls = "", html = "") {
-  const wrap = el(p, cls, `left:0;top:0;transform:translate3d(${x}px,${y}px,${z}px)`);
-  const b = el(wrap, "bb", `left:${-w / 2}px;top:${-h}px;width:${w}px;height:${h}px;transform:rotateZ(${-TURN_Z}deg) rotateX(${-TILT_X}deg);${style}`);
-  if (html) b.innerHTML = html;
-  return b;
-}
-// a line drawn on the floor
-function line(p, x1, y1, x2, y2, col, dashed = true, z = 1) {
-  const len = Math.hypot(x2 - x1, y2 - y1), a = Math.atan2(y2 - y1, x2 - x1);
-  el(p, "", `left:0;top:0;width:${len}px;height:3px;transform-origin:0 50%;transform:translate3d(${x1}px,${y1}px,${z}px) rotateZ(${a}rad);` +
-    `background:${dashed ? `repeating-linear-gradient(90deg, ${col} 0 8px, transparent 8px 14px)` : col};border-radius:2px`);
-}
-const sphere = (c, hi = "#fff") => `border-radius:50%;background:radial-gradient(circle at 34% 30%, ${hi} 0, ${c} 42%, ${shade(c, 45)} 100%);box-shadow:0 8px 18px rgba(0,0,0,.25)`;
-
-const DC = "var(--dc)", EDGE = "var(--edge)";
-const WHITE = "#f6f2ea", STONE = "#d8cfbf", DARK = "#2a2f3f", GOLD = "#d4ab5a", GLASS = "#9fd0dd";
-
-// ---------- one model per project ----------
-const MODELS = {
-  // a browser window with an investor's magnifying glass over it
-  "investor-connect"(m) {
-    box(m, 0, 70, 0, 170, 12, 112, WHITE, { south:
-      `linear-gradient(#e2dccf 0 14px, transparent 14px) , radial-gradient(circle at 10px 7px, #c9564b 3px, transparent 4px), linear-gradient(transparent 24px, var(--dc) 24px 34px, transparent 34px 44px, #cfc8b8 44px 49px, transparent 49px 56px, #cfc8b8 56px 61px, transparent 61px 72px, color-mix(in srgb, var(--dc) 35%, #fff) 72px 104px, transparent 104px), ${WHITE}` });
-    box(m, 40, 82, 0, 90, 30, 6, STONE);
-    bb(m, 140, 40, 120, 70, 70, "border:9px solid " + GOLD + ";border-radius:50%;background:rgba(255,255,255,.25);box-shadow:0 8px 20px rgba(0,0,0,.2)", "bob");
-    bb(m, 168, 52, 84, 12, 46, `background:${shade(GOLD, 25)};border-radius:6px;transform:rotateZ(40deg) rotateX(-58deg) rotate(-38deg)`, "bob");
-    return 150;
-  },
-  // three banks around one shared model; lines carry what they learn, never the data
-  "fedbank-india"(m) {
-    const banks = [[0, 0], [150, 30], [60, 140]];
-    for (const [x, y] of banks) line(m, x + 35, y + 30, 105, 95, GOLD);
-    for (const [x, y] of banks) {
-      box(m, x, y, 0, 72, 58, 10, STONE);
-      box(m, x + 6, y + 6, 10, 60, 46, 44, WHITE, { south: `repeating-linear-gradient(90deg, ${WHITE} 0 6px, #cdc4b2 6px 9px, ${WHITE} 9px 12px)` });
-      box(m, x + 2, y + 2, 54, 68, 54, 8, DC);
-      box(m, x + 14, y + 12, 62, 44, 32, 8, EDGE);
-    }
-    bb(m, 105, 95, 40, 34, 34, sphere(GOLD), "pulse");
-    return 120;
-  },
-  // a server with phones around it; some phones keep dropping out
-  "fedpbc-demo"(m) {
-    const phones = [[150, 10], [170, 100], [110, 175], [-10, 160]];
-    phones.forEach(([x, y]) => line(m, x + 13, y + 5, 50, 50, DC));
-    box(m, 28, 28, 0, 46, 46, 100, DARK, { south: `repeating-linear-gradient(transparent 0 10px, #4fd18b 10px 13px, transparent 13px 22px), ${DARK}` });
-    phones.forEach(([x, y], i) => box(m, x, y, 0, 26, 10, 48, DARK, { south: `linear-gradient(160deg, ${GLASS}, var(--dc))`, cls: i % 2 ? "blink" : "" }));
-    return 130;
-  },
-  // a castle to conquer, one quest at a time
-  "federation-quest"(m) {
-    box(m, 0, 0, 0, 120, 120, 40, STONE, { south: `radial-gradient(ellipse 18px 26px at 50% 100%, #3b3226 98%, transparent), ${STONE}` });
-    for (const [x, y] of [[-8, -8], [98, -8], [-8, 98], [98, 98]]) box(m, x, y, 0, 30, 30, 72, "#cbbfa9");
-    box(m, 40, 40, 40, 40, 40, 50, "#cbbfa9");
-    bb(m, 60, 60, 90, 2, 46, `background:${DARK}`);
-    bb(m, 76, 60, 118, 30, 20, `background:${DC};clip-path:polygon(0 0,100% 50%,0 100%)`, "bob");
-    return 150;
-  },
-  // a smart home with a shield; the hacker bounces off
-  "fedmse-arcade"(m) {
-    box(m, 0, 20, 0, 90, 70, 46, WHITE, { south: `radial-gradient(circle at 30% 45%, ${GLASS} 9px, transparent 10px), radial-gradient(circle at 72% 45%, ${GLASS} 9px, transparent 10px), linear-gradient(90deg, transparent 44%, #8c6b4a 44% 56%, transparent 56%) bottom/100% 55% no-repeat, ${WHITE}` });
-    box(m, -6, 14, 46, 102, 82, 10, DC);
-    box(m, 8, 26, 56, 74, 58, 10, DC);
-    box(m, 22, 38, 66, 46, 34, 10, EDGE);
-    bb(m, 45, 55, 92, 50, 58, `background:linear-gradient(160deg, color-mix(in srgb, var(--dc) 40%, #fff), var(--dc));clip-path:path('M25 0 L50 9 L50 28 C50 44 38 53 25 58 C12 53 0 44 0 28 L0 9 Z')`, "pulse");
-    box(m, 150, 70, 0, 22, 22, 22, "#c9564b", { cls: "bob" });
-    return 150;
-  },
-  // learn from whoever is improving: bars climbing
-  "flprogress-explained"(m) {
-    [22, 36, 54, 76, 104].forEach((h, i) => box(m, i * 36, 60 - i * 6, 0, 26, 26, h, i === 4 ? GOLD : DC));
-    bb(m, 160, 20, 130, 34, 34, `background:${GOLD};clip-path:polygon(50% 0,100% 55%,68% 55%,68% 100%,32% 100%,32% 55%,0 55%)`, "bob");
-    return 150;
-  },
-  // a hospital and two clinics: the records stay in each building
-  "samhita-health"(m) {
-    line(m, 60, 50, 200, 30, DC); line(m, 60, 50, 200, 150, DC);
-    box(m, 0, 0, 0, 120, 92, 92, WHITE, { south: `radial-gradient(circle at 50% 30%, transparent 0, transparent), linear-gradient(90deg, transparent 43%, var(--dc) 43% 57%, transparent 57%) 50% 18%/34px 34px no-repeat, linear-gradient(transparent 43%, var(--dc) 43% 57%, transparent 57%) 50% 18%/34px 34px no-repeat, repeating-linear-gradient(90deg, transparent 0 12px, ${GLASS} 12px 24px, transparent 24px 30px) 0 100%/100% 38% no-repeat, ${WHITE}` });
-    for (const [x, y] of [[180, 0], [180, 120]]) {
-      box(m, x, y, 0, 60, 50, 50, WHITE, { south: `linear-gradient(90deg, transparent 40%, var(--dc) 40% 60%, transparent 60%) 50% 30%/20px 20px no-repeat, linear-gradient(transparent 40%, var(--dc) 40% 60%, transparent 60%) 50% 30%/20px 20px no-repeat, ${WHITE}` });
-      box(m, x + 62, y + 30, 0, 18, 14, 22, GOLD);
-    }
-    box(m, 124, 70, 0, 18, 14, 22, GOLD);
-    return 130;
-  },
-  // a contract with the exact line highlighted, and the phone that found it
-  "doclaw-app"(m) {
-    box(m, 0, 0, 0, 120, 160, 5, WHITE, { top: `linear-gradient(transparent 70px, rgba(240, 200, 60, .75) 70px 84px, transparent 84px), repeating-linear-gradient(transparent 0 14px, #cfc7b6 14px 17px, transparent 17px 24px) 14px 14px/92px 140px no-repeat, ${WHITE}` });
-    box(m, 150, 110, 0, 64, 12, 120, DARK, { south: `linear-gradient(transparent 50px, rgba(240, 200, 60, .85) 50px 60px, transparent 60px), repeating-linear-gradient(transparent 0 8px, #d7d1c4 8px 10px) 8px 12px/48px 100px no-repeat, #fbf8f2` });
-    return 140;
-  },
-  // a street-corner lamp with chats floating round it
-  "thinking-outside-the-box"(m) {
-    box(m, 40, 40, 0, 40, 40, 6, STONE);
-    box(m, 55, 55, 6, 10, 10, 130, DARK);
-    bb(m, 60, 60, 136, 26, 26, sphere("#ffd77a", "#fff8dd") + ";box-shadow:0 0 40px 10px rgba(255,210,110,.55)");
-    const bub = (x, y, z, w, c, cls) => bb(m, x, y, z, w, 34, `background:${c};border-radius:16px 16px 16px 4px;box-shadow:0 6px 14px rgba(0,0,0,.18);display:grid;place-items:center;color:#fff;font:700 18px/1 var(--sans);letter-spacing:2px`, cls, "···");
-    bub(-10, 100, 70, 60, DC, "bob"); bub(130, 0, 100, 54, "#4b6cb7", "wave"); bub(140, 120, 50, 64, EDGE, "bob");
-    return 160;
-  },
-  // one question a day, under the sun
-  "daily-mind"(m) {
-    bb(m, 70, 30, 110, 70, 70, sphere(GOLD, "#fff3c9") + ";box-shadow:0 0 50px 12px rgba(230,180,80,.35)", "pulse");
-    box(m, 20, 110, 0, 90, 12, 110, WHITE, { south: `${WHITE}` }).firstChild.innerHTML =
-      `<span style="display:grid;place-items:center;height:100%;font:400 70px/1 var(--serif);color:var(--dc)">?</span>`;
-    return 150;
-  },
-  // letter tiles spelling the name, bouncing in turn
-  "pokewords"(m) {
-    [..."PIKACHU"].forEach((ch, i) => box(m, i * 46, 0, 0, 40, 40, 12, "#f3e3b6", { cls: "wave", topHTML:
-      `<span style="display:grid;place-items:center;height:100%;font:700 22px/1 var(--serif);color:${DARK};transform:rotate(${-TURN_Z}deg)">${ch}</span>` })
-      .style.setProperty("animation-delay", i * .18 + "s"));
-    return 60;
-  },
-  // a battery showing its health, a charger and the car it powers
-  "battery-analytics-prototype"(m) {
-    const f = box(m, 0, 40, 0, 200, 100, 90, DARK);
-    el(f.firstChild, "fill", `left:10px;top:12px;bottom:12px;width:60%;border-radius:4px;background:repeating-linear-gradient(90deg, #4fd18b 0 12px, transparent 12px 17px)`);
-    box(m, 160, 60, 90, 26, 26, 14, "#c9c2b4");
-    box(m, 14, 60, 90, 26, 26, 8, "#c9c2b4");
-    box(m, 260, -20, 0, 50, 40, 74, WHITE);
-    bb(m, 285, 10, 86, 26, 34, `background:${GOLD};clip-path:polygon(55% 0,10% 58%,45% 58%,35% 100%,90% 40%,55% 40%)`, "pulse");
-    line(m, 200, 70, 270, 30, DARK, false, 2);
-    box(m, 240, 170, 14, 160, 76, 30, DC);
-    box(m, 280, 180, 44, 84, 60, 28, GLASS);
-    for (const [x, y] of [[262, 250], [372, 250], [262, 170], [372, 170]]) bb(m, x, y, 0, 34, 34, sphere("#222", "#777"));
-    return 150;
-  },
-  // a breadboard: chips, wires and blinking LEDs
-  "logic-bench"(m) {
-    box(m, 0, 0, 0, 380, 210, 14, WHITE, { top:
-      `linear-gradient(transparent 10px, #c9564b 10px 12px, transparent 12px 18px, #4b6cb7 18px 20px, transparent 20px 190px, #c9564b 190px 192px, transparent 192px 198px, #4b6cb7 198px 200px, transparent 200px), radial-gradient(circle, #b9b0a0 1.6px, transparent 2px) 0 0/12px 12px, ${WHITE}` });
-    [[40, 70], [150, 70], [260, 70]].forEach(([x, y]) => box(m, x, y, 14, 76, 30, 12, "#23262f", { south: `repeating-linear-gradient(90deg, #c8ccd2 0 4px, transparent 4px 10px), #23262f`, topHTML: `<span style="display:block;padding:9px 0 0 8px;font:600 8px var(--sans);color:#aab;letter-spacing:.06em">74LS08</span>` }));
-    const wire = (x1, y1, x2, y2, c) => { line(m, x1, y1, x2, y2, c, false, 16); };
-    wire(20, 40, 60, 70, "#e0533d"); wire(126, 85, 150, 85, "#3f86d6"); wire(236, 85, 260, 85, "#e8b33c"); wire(300, 100, 340, 160, "#3faa6a");
-    [[60, 150, "#ff5a4a"], [100, 150, "#56e08a"], [140, 150, "#ffd34a"]].forEach(([x, y, c], i) =>
-      bb(m, x, y, 16, 18, 18, sphere(c, "#fff") + `;box-shadow:0 0 18px 4px ${c}`, "blink").parentNode.style.animationDelay = i * .5 + "s");
-    return 70;
-  },
-  // a satellite circling Earth, unlearning the poisoned streaks
-  "neural-debris-solution"(m) {
-    bb(m, 180, 160, 30, 150, 150, sphere("#3c74c9", "#bfe0ff") + ";box-shadow:0 0 50px 8px rgba(80,140,230,.35)");
-    const orbit = el(m, "spin", "left:180px;top:160px;width:0;height:0");
-    box(orbit, 130, -15, 130, 30, 30, 24, "#c9cdd6");
-    box(orbit, 82, -9, 140, 46, 18, 3, "#2b4fa8");
-    box(orbit, 162, -9, 140, 46, 18, 3, "#2b4fa8");
-    for (const [x, y, w] of [[20, 40, 90], [300, 280, 70], [40, 300, 60]]) bb(m, x, y, 60, w, 3, "background:linear-gradient(90deg, transparent, #fff);border-radius:2px");
-    bb(m, 330, 60, 80, 16, 16, sphere("#e2453c", "#ffb0a8") + ";box-shadow:0 0 16px 4px rgba(226,69,60,.6)", "blink");
-    return 200;
-  },
-};
-
-// pitch decks: a stack of slides, the first slide on top
-function deckModel(m, p) {
-  for (let i = 0; i < 4; i++) box(m, i * 4, -i * 3, i * 7, 130, 86, 4, i === 3 ? WHITE : `color-mix(in srgb, ${DOMAINS[p.dom].c} ${30 + i * 15}%, #fff)`,
-    i === 3 ? { top: `url(images/${p.img}) center/cover, ${WHITE}` } : {});
-  return 70;
-}
-
-
-// where each model sits on its domain's floor, and where its name tag floats: [repo, x, y, tagX, tagY]
-const WORLDS = [
-  { dom: "fintech", items: [["investor-connect", 50, 40, 90, 80], ["fedbank-india", 290, 170, 105, 95]] },
-  { dom: "fl", items: [["fedpbc-demo", 40, 30, 50, 50], ["federation-quest", 370, 40, 60, 60], ["fedmse-arcade", 50, 285, 45, 55], ["flprogress-explained", 330, 265, 80, 40]] },
-  { dom: "auto", items: [["battery-analytics-prototype", 60, 90, 100, 90]] },
-  { dom: "health", items: [["samhita-health", 40, 40, 60, 46], ["doclaw-app", 320, 215, 60, 80]] },
-  { dom: "social", items: [["thinking-outside-the-box", 70, 50, 60, 60], ["daily-mind", 370, 40, 65, 70], ["pokewords", 110, 320, 160, 20]] },
-  { dom: "algo", items: [["neural-debris-solution", 40, 30, 180, 160]], floor: "radial-gradient(circle, rgba(255,255,255,.8) 1px, transparent 1.5px) 0 0/34px 34px, radial-gradient(circle, rgba(255,255,255,.5) 1px, transparent 1.5px) 17px 11px/47px 47px, #141a33" },
-  { dom: "edu", items: [["logic-bench", 90, 105, 190, 105]] },
-];
-const DECK_SPOTS = [[30, 40], [215, 20], [395, 60], [90, 235], [300, 245]];
-
-const byRepo = Object.fromEntries(projects.filter((p) => !p.deck).map((p) => [p.repo, p]));
-const decks = projects.filter((p) => p.deck);
-const worldsEl = document.getElementById("worlds");
-const decksEl = document.getElementById("decks");
-
-function linksFor(p) {
-  if (p.deck) return `<a href="${p.live}" target="_blank" rel="noopener">Open deck ↗</a>` +
-    (p.private ? "" : `<a class="ghost" href="${GH + p.repo}" target="_blank" rel="noopener">GitHub ↗</a>`);
-  return (p.private ? "" : `<a href="${GH + p.repo}" target="_blank" rel="noopener">GitHub ↗</a>`) +
-    (p.live ? `<a class="${p.private ? "" : "ghost"}" href="${p.live}" target="_blank" rel="noopener">Live site ↗</a>` : "") +
-    (p.private ? `<span class="lock">Private repo</span>` : "");
-}
-
-function makeWorld(host, { title, no, color, deep, floor, list, place, flip }) {
-  const sec = document.createElement("section");
-  sec.className = "domain" + (flip ? " flip" : "");
-  sec.style.setProperty("--dc", color);
-  sec.style.setProperty("--dd", deep);
-  sec.setAttribute("aria-label", title);
-  sec.innerHTML = `
-    <div class="stage" aria-hidden="true"><div class="fit"><div class="world"></div></div></div>
-    <div class="info">
-      <div class="no">${no}</div>
-      <h2>${title}</h2>
-      <div class="chips" role="tablist"></div>
-      <div class="pick" aria-live="polite"></div>
-    </div>`;
-  host.appendChild(sec);
-  const world = sec.querySelector(".world"), chips = sec.querySelector(".chips"), pick = sec.querySelector(".pick");
-  box(world, 0, 0, -26, 560, 420, 26, "var(--edge)", { top: floor || "var(--plate)" });
-
-  const models = list.map((p, k) => {
-    const [x, y, tx, ty] = place(p, k);
-    const m = el(world, "m", `--mx:${x}px;--my:${y}px`);
-    const z = p.deck ? deckModel(m, p) : MODELS[p.repo](m);
-    bb(m, tx, ty, z + 18, 0, 0, "width:auto;height:auto", "", "").innerHTML = `<span class="tag">${p.name}</span>`;
-    const chip = document.createElement("button");
-    chip.type = "button"; chip.setAttribute("role", "tab"); chip.textContent = p.name;
-    chips.appendChild(chip);
-    const choose = () => select(k);
-    m.addEventListener("click", choose);
-    chip.addEventListener("click", choose);
-    return { m, chip, p };
-  });
-  function select(k) {
-    models.forEach((o, j) => { o.m.classList.toggle("on", j === k); o.chip.classList.toggle("on", j === k); o.chip.setAttribute("aria-selected", String(j === k)); });
-    const p = models[k].p;
-    pick.innerHTML = `<div class="kind">${p.kind}</div><h3>${p.name}</h3><p class="q">${p.q}</p><div class="links">${linksFor(p)}</div>`;
-    pick.classList.remove("swap"); void pick.offsetWidth; pick.classList.add("swap");
-  }
-  select(0);
-
-  // lean the world a little toward the pointer
-  const fit = sec.querySelector(".fit"), stage = sec.querySelector(".stage");
-  if (matchMedia("(hover: hover)").matches) {
-    stage.addEventListener("pointermove", (e) => {
-      const r = stage.getBoundingClientRect();
-      fit.style.setProperty("--ty", ((e.clientX - r.left) / r.width - .5) * 10 + "deg");
-      fit.style.setProperty("--tx", -((e.clientY - r.top) / r.height - .5) * 8 + "deg");
-    });
-    stage.addEventListener("pointerleave", () => { fit.style.setProperty("--tx", "0deg"); fit.style.setProperty("--ty", "0deg"); });
-  }
-  return sec;
-}
-
-let n = 0;
-WORLDS.forEach((w, i) => {
-  const D = DOMAINS[w.dom];
-  const list = w.items.map(([repo]) => byRepo[repo]);
-  makeWorld(worldsEl, {
-    title: D.label, no: `${String(++n).padStart(2, "0")} · ${list.length} ${list.length === 1 ? "project" : "projects"}`,
-    color: D.c, deep: D.d, floor: w.floor, list, flip: i % 2 === 1,
-    place: (p, k) => w.items[k].slice(1),
-  });
-});
-makeWorld(decksEl, {
-  title: "Pitch decks", no: `${decks.length} decks`, color: "#8a6a2e", deep: "#3d2c0e", list: decks, flip: false,
-  place: (p, k) => [...DECK_SPOTS[k % DECK_SPOTS.length], 70, 40],
-});
-
-// size each world to its column, and only animate the ones on screen
-function fitAll() {
-  document.querySelectorAll(".stage").forEach((s) => s.style.setProperty("--s", Math.min(.8, s.clientWidth / 760).toFixed(3)));
-}
-fitAll();
-let lastW = innerWidth;
-addEventListener("resize", () => { if (innerWidth !== lastW) { lastW = innerWidth; fitAll(); } });
-const io = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle("live", e.isIntersecting)), { rootMargin: "100px" });
-document.querySelectorAll(".domain").forEach((d) => io.observe(d));
-
 // light by default; the choice is remembered on this device
 const themeBtn = document.getElementById("theme");
 function syncThemeLabel() {
@@ -638,6 +330,362 @@ themeBtn.addEventListener("click", () => {
   syncThemeLabel();
 });
 syncThemeLabel();
+</script>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
+<script type="module">
+import * as THREE from "three";
+await document.fonts.ready;
+
+const room = document.getElementById("room");
+const vision = room.querySelector(".vision"), tip = room.querySelector(".tip");
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); }
+catch (e) { room.querySelector(".hint").textContent = "This 3D room needs WebGL. Use the list below instead."; throw e; }
+room.prepend(renderer.domElement);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+
+const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const dark = () => document.documentElement.dataset.theme === "dark";
+const V3 = THREE.Vector3;
+const ease = (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+const mix = (a, b, t) => "#" + new THREE.Color(a).lerp(new THREE.Color(b), t).getHexString();
+
+// ---------------- painted textures ----------------
+function tex(w, h, draw, repeat) {
+  const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  if (repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(...repeat); }
+  return t;
+}
+const wood = (base, n = 6) => tex(512, 512, (g, w, h) => {
+  g.fillStyle = base; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < n; i++) { g.fillStyle = `rgba(0,0,0,${.05 + (i % 3) * .03})`; g.fillRect(0, i * h / n, w, 2); }
+  for (let i = 0; i < 220; i++) { g.strokeStyle = `rgba(${Math.random() < .5 ? "0,0,0" : "255,255,255"},${Math.random() * .06})`; g.beginPath(); const y = Math.random() * h; g.moveTo(0, y); g.bezierCurveTo(w * .3, y + Math.random() * 8 - 4, w * .7, y + Math.random() * 8 - 4, w, y); g.stroke(); }
+}, [3, 3]);
+const M = (o) => new THREE.MeshStandardMaterial({ roughness: .75, ...o });
+function box(w, h, d, mat, x, y, z, parent) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; parent.add(m); return m;
+}
+
+// ---------------- the room ----------------
+const scene = new THREE.Scene();
+const hemi = new THREE.HemisphereLight(0xfff4e6, 0x6b5844, 1.3); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff1dc, 2.6);
+sun.position.set(-9, 9, 4); sun.target.position.set(0, 1, -2); scene.add(sun, sun.target);
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.radius = 5; sun.shadow.bias = -.0004;
+Object.assign(sun.shadow.camera, { left: -9, right: 9, top: 8, bottom: -3, near: 1, far: 30 });
+const lamp = new THREE.PointLight(0xffc77a, 6, 9, 1.6); lamp.position.set(3.8, 2.3, -1.85); scene.add(lamp);
+
+const floorMat = M({ map: wood("#9b6f45", 8), roughness: .62 });
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 12), floorMat); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+const wallMat = M({ color: "#efe3cf", roughness: .95 });
+const back = new THREE.Mesh(new THREE.PlaneGeometry(16, 7), wallMat); back.position.set(0, 3.5, -4.6); back.receiveShadow = true; scene.add(back);
+const left = new THREE.Mesh(new THREE.PlaneGeometry(12, 7), wallMat); left.rotation.y = Math.PI / 2; left.position.set(-7.2, 3.5, 1.4); left.receiveShadow = true; scene.add(left);
+const wainMat = M({ color: "#c9a77c", roughness: .7, map: wood("#b88f62", 1) });
+box(16, 1.1, .06, wainMat, 0, .55, -4.56, scene); box(.06, 1.1, 12, wainMat, -7.16, .55, 1.4, scene);
+box(16, .08, .1, M({ color: "#8a6440" }), 0, 1.12, -4.53, scene);
+
+// window on the left wall: daylight by day, stars by night
+const sky = { day: tex(256, 320, (g) => { const gr = g.createLinearGradient(0, 0, 0, 320); gr.addColorStop(0, "#9fd0f2"); gr.addColorStop(1, "#f6e7c8"); g.fillStyle = gr; g.fillRect(0, 0, 256, 320); g.fillStyle = "rgba(255,255,255,.8)"; [[60, 90, 34], [150, 70, 26], [190, 120, 30]].forEach(([x, y, r]) => { g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); }); }),
+  night: tex(256, 320, (g) => { const gr = g.createLinearGradient(0, 0, 0, 320); gr.addColorStop(0, "#0b1230"); gr.addColorStop(1, "#28325a"); g.fillStyle = gr; g.fillRect(0, 0, 256, 320); for (let i = 0; i < 90; i++) { g.fillStyle = `rgba(255,255,255,${Math.random()})`; g.fillRect(Math.random() * 256, Math.random() * 320, 2, 2); } g.fillStyle = "#f4ecd2"; g.beginPath(); g.arc(180, 70, 22, 0, 7); g.fill(); }) };
+const glassMat = new THREE.MeshBasicMaterial({ map: sky.day });
+const win = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 3), glassMat); win.rotation.y = Math.PI / 2; win.position.set(-7.13, 3.3, -.6); scene.add(win);
+const frameMat = M({ color: "#f7f1e6" });
+box(.12, .12, 2.6, frameMat, -7.1, 4.85, -.6, scene); box(.16, .16, 2.7, frameMat, -7.08, 1.75, -.6, scene); box(.12, 3.1, .08, frameMat, -7.1, 3.3, -.6, scene); box(.12, .08, 2.5, frameMat, -7.1, 3.3, -.6, scene);
+box(.12, 3.1, .1, frameMat, -7.1, 3.3, -1.85, scene); box(.12, 3.1, .1, frameMat, -7.1, 3.3, .65, scene);
+
+// a rug in front of the shelf
+box(6.4, .02, 3.6, M({ map: tex(512, 288, (g, w, h) => { g.fillStyle = "#7a2a35"; g.fillRect(0, 0, w, h); g.strokeStyle = "#d4ab5a"; g.lineWidth = 8; g.strokeRect(22, 22, w - 44, h - 44); g.lineWidth = 3; g.strokeRect(40, 40, w - 80, h - 80); g.fillStyle = "rgba(212,171,90,.6)"; for (let i = 0; i < 7; i++) { g.save(); g.translate(w / 2, h / 2); g.rotate(i * Math.PI / 3.5); g.fillRect(-6, -60, 12, 120); g.restore(); } }), roughness: 1 }), -.6, .01, -.9, scene);
+
+// ---------------- the bookshelf ----------------
+const SHELF = { x: -.9, z: -4.05, w: 8.6, h: 4.6, d: .9, ys: [.18, 1.28, 2.38, 3.48] };
+const shelfWood = M({ map: wood("#6e4528", 5), roughness: .55 });
+const shelfBack = M({ map: wood("#4d2f1b", 5), roughness: .8 });
+const sg = new THREE.Group(); sg.position.set(SHELF.x, 0, SHELF.z); scene.add(sg);
+box(SHELF.w, SHELF.h, .06, shelfBack, 0, SHELF.h / 2, -SHELF.d / 2 + .03, sg);
+box(.14, SHELF.h, SHELF.d, shelfWood, -SHELF.w / 2, SHELF.h / 2, 0, sg); box(.14, SHELF.h, SHELF.d, shelfWood, SHELF.w / 2, SHELF.h / 2, 0, sg);
+box(SHELF.w + .3, .16, SHELF.d + .1, shelfWood, 0, SHELF.h + .08, .02, sg);
+SHELF.ys.forEach((y) => box(SHELF.w, .08, SHELF.d, shelfWood, 0, y - .04, 0, sg));
+
+// ---------------- the desk, lamp, globe and plant ----------------
+const desk = new THREE.Group(); desk.position.set(4.6, 0, -1.6); scene.add(desk);
+const deskWood = M({ map: wood("#7b4f2c", 4), roughness: .5 });
+box(2.6, .1, 1.3, deskWood, 0, 1.22, 0, desk);
+[[-1.2, -.55], [1.2, -.55], [-1.2, .55], [1.2, .55]].forEach(([x, z]) => box(.1, 1.17, .1, deskWood, x, .585, z, desk));
+const brass = M({ color: "#c9a24f", metalness: .8, roughness: .3 });
+const lampG = new THREE.Group(); lampG.position.set(-.8, 1.27, -.25); desk.add(lampG);
+const cyl = (r1, r2, h, mat, y, p) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, 32), mat); m.position.y = y; m.castShadow = true; p.add(m); return m; };
+cyl(.22, .26, .05, brass, .025, lampG); cyl(.03, .03, .9, brass, .5, lampG);
+const shadeM = M({ color: "#1f5f4a", side: THREE.DoubleSide, roughness: .5 }); cyl(.16, .34, .3, shadeM, 1.0, lampG).material = shadeM;
+const bulb = new THREE.Mesh(new THREE.SphereGeometry(.08, 16, 12), new THREE.MeshBasicMaterial({ color: "#ffe2a8" })); bulb.position.y = .9; lampG.add(bulb);
+const globe = new THREE.Group(); globe.position.set(.55, 1.27, .05); desk.add(globe);
+cyl(.14, .18, .04, brass, .02, globe); cyl(.02, .02, .3, brass, .17, globe);
+const earth = new THREE.Mesh(new THREE.SphereGeometry(.3, 32, 24), M({ map: tex(256, 128, (g) => { g.fillStyle = "#3b6fb0"; g.fillRect(0, 0, 256, 128); g.fillStyle = "#c9b27a"; [[40, 40, 30, 22], [90, 70, 22, 30], [150, 40, 40, 20], [200, 80, 26, 18], [120, 100, 18, 10]].forEach(([x, y, a, b]) => { g.beginPath(); g.ellipse(x, y, a, b, .4, 0, 7); g.fill(); }); }), roughness: .5 }));
+earth.position.y = .62; earth.rotation.z = .4; earth.castShadow = true; globe.add(earth);
+const pot = new THREE.Group(); pot.position.set(-6.1, 0, -3.6); scene.add(pot);
+cyl(.34, .26, .62, M({ color: "#b5683a" }), .31, pot);
+for (let i = 0; i < 9; i++) { const leaf = new THREE.Mesh(new THREE.SphereGeometry(.26, 12, 10), M({ color: i % 2 ? "#2f7a4c" : "#3c8f5a" })); const a = i / 9 * Math.PI * 2; leaf.position.set(Math.cos(a) * .2, .85 + (i % 3) * .28, Math.sin(a) * .2); leaf.scale.set(.8, 1.3, .8); leaf.castShadow = true; pot.add(leaf); }
+// a framed note on the wall
+box(1.5, 1.0, .05, M({ color: "#2b2f3f" }), 4.6, 3.1, -4.55, scene);
+box(1.34, .84, .02, M({ map: tex(256, 160, (g) => { g.fillStyle = "#f6efe2"; g.fillRect(0, 0, 256, 160); g.fillStyle = "#1c2033"; g.font = "italic 400 34px Fraunces, Georgia, serif"; g.textAlign = "center"; g.fillText("Things I've", 128, 72); g.fillStyle = "#9a7636"; g.fillText("built.", 128, 116); }) }), 4.6, 3.1, -4.52, scene);
+
+// ---------------- books ----------------
+const loader = new THREE.TextureLoader();
+const FULL = new Set(['investor-connect', 'fedpbc-demo', 'federation-quest', 'fedmse-arcade', 'flprogress-explained', 'thinking-outside-the-box', 'pokewords', 'logic-bench']);
+const ORDER = ["fintech", "fl", "algo", "auto", "health", "social", "edu", "industry"];
+const items = projects.slice().sort((a, b) => ORDER.indexOf(a.dom) - ORDER.indexOf(b.dom));
+const rows = [items.filter((p) => ["fintech", "fl", "algo"].includes(p.dom)), items.filter((p) => !["fintech", "fl", "algo"].includes(p.dom))];
+const books = [];
+const spineTex = (p, D, h) => tex(128, 512, (g, w, H) => {
+  const gr = g.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, mix(D.c, "#000", .35)); gr.addColorStop(.5, D.c); gr.addColorStop(1, mix(D.c, "#000", .3));
+  g.fillStyle = gr; g.fillRect(0, 0, w, H); g.fillStyle = "#d9b46a";
+  [[24, 6], [38, 2], [H - 44, 2], [H - 30, 6]].forEach(([y, t]) => g.fillRect(8, y, w - 16, t));
+  if (p.deck) { g.fillStyle = "#d9b46a"; g.font = "600 15px Inter, sans-serif"; g.textAlign = "center"; g.fillText("DECK", w / 2, H - 58); }
+  g.save(); g.translate(w / 2, H / 2 + (p.deck ? -14 : 0)); g.rotate(-Math.PI / 2); g.fillStyle = "#f3dfae";
+  let size = 44; g.font = `500 ${size}px Fraunces, Georgia, serif`; while (g.measureText(p.name).width > H - 150 && size > 20) { size -= 2; g.font = `500 ${size}px Fraunces, Georgia, serif`; }
+  g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(p.name, 0, 2); g.restore();
+});
+const coverTex = (p, D) => tex(256, 360, (g, w, h) => {
+  g.fillStyle = D.c; g.fillRect(0, 0, w, h); g.strokeStyle = "#d9b46a"; g.lineWidth = 4; g.strokeRect(16, 16, w - 32, h - 32); g.lineWidth = 1.5; g.strokeRect(24, 24, w - 48, h - 48);
+  g.fillStyle = "#f3dfae"; g.textAlign = "center"; let size = 34; g.font = `500 ${size}px Fraunces, Georgia, serif`; while (g.measureText(p.name).width > w - 70) { size -= 2; g.font = `500 ${size}px Fraunces, Georgia, serif`; }
+  g.fillText(p.name, w / 2, h / 2); g.font = "600 11px Inter, sans-serif"; g.fillText(DOMAINS[p.dom].label.toUpperCase(), w / 2, h / 2 + 34);
+});
+const pagesTex = tex(64, 64, (g) => { g.fillStyle = "#f4ecd9"; g.fillRect(0, 0, 64, 64); g.fillStyle = "rgba(120,100,70,.18)"; for (let i = 0; i < 64; i += 3) g.fillRect(0, i, 64, 1); });
+const pagesMat = M({ map: pagesTex, roughness: .9 });
+const fillers = ["#5b4636", "#7d6a55", "#3e4a5c", "#8b7a5e", "#6a3f3a", "#4b5a48", "#a08867", "#2f3a4a"];
+
+function makeBook(p, D, h, t, wDepth) {
+  // local frame: cover faces +z, spine on -x; on the shelf the book is turned so the spine faces the room
+  const g = new THREE.Group();
+  const coverM = M({ color: D.c, roughness: .55 });
+  const back = box(wDepth, h, .025, coverM, 0, 0, -t / 2 + .0125, g);
+  const spine = box(.025, h, t, [coverM, M({ map: spineTex(p, D, h), roughness: .45 }), coverM, coverM, coverM, coverM], -wDepth / 2 + .0125, 0, 0, g);
+  box(wDepth - .04, h - .05, t - .05, pagesMat, .01, 0, 0, g);
+  const hinge = new THREE.Group(); hinge.position.set(-wDepth / 2, 0, t / 2 - .0125); g.add(hinge);
+  const front = box(wDepth, h, .025, [coverM, coverM, coverM, coverM, M({ map: coverTex(p, D), roughness: .5 }), M({ color: "#efe4cc" })], wDepth / 2, 0, 0, hinge);
+  g.userData = { p, D, hinge, h, t };
+  [back, spine, front].forEach((m) => (m.userData.book = g));
+  g.children.forEach((m) => (m.userData.book = g));
+  return g;
+}
+
+rows.forEach((row, ri) => {
+  const y = SHELF.ys[ri === 0 ? 2 : 1];
+  let x = -SHELF.w / 2 + .3, lastDom = null;
+  const plaques = [];
+  row.forEach((p) => {
+    const D = DOMAINS[p.dom];
+    if (lastDom && lastDom !== p.dom) {             // a couple of plain books between fields
+      for (let i = 0; i < 2; i++) { const t = .14 + Math.random() * .1, h = .62 + Math.random() * .2; box(t, h, .6, M({ color: fillers[(Math.random() * fillers.length) | 0], roughness: .8 }), x + t / 2, y + h / 2, -.05, sg); x += t + .015; }
+      x += .05;
+    }
+    if (lastDom !== p.dom) plaques.push({ dom: p.dom, x0: x });
+    lastDom = p.dom;
+    const h = .86 + Math.random() * .1, t = .26 + Math.random() * .07;
+    const b = makeBook(p, D, h, t, .62);
+    b.rotation.y = Math.PI / 2;
+    b.position.set(x + t / 2, y + h / 2, 0);
+    sg.add(b);
+    b.userData.home = { pos: b.position.clone(), quat: b.quaternion.clone() };
+    b.userData.open = 0; b.userData.goal = 0; b.userData.pull = 0;
+    books.push(b);
+    plaques[plaques.length - 1].x1 = x + t;
+    x += t + .02;
+  });
+  // fill the rest of the shelf with plain books, one lying flat
+  while (x < SHELF.w / 2 - .4) { const t = .12 + Math.random() * .12, h = .55 + Math.random() * .3; box(t, h, .6, M({ color: fillers[(Math.random() * fillers.length) | 0], roughness: .8 }), x + t / 2, y + h / 2, -.05, sg); x += t + .012; }
+  // small brass plaques naming each field
+  plaques.forEach(({ dom, x0, x1 }) => {
+    const D = DOMAINS[dom], w = Math.max(.7, x1 - x0);
+    box(w, .13, .02, M({ map: tex(512, 64, (g) => { g.fillStyle = "#c9a24f"; g.fillRect(0, 0, 512, 64); g.fillStyle = "#3a2a10"; g.font = "600 30px Inter, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(D.label.toUpperCase(), 256, 34); }), metalness: .6, roughness: .35 }), (x0 + x1) / 2, y - .04, SHELF.d / 2 + .012, sg);
+  });
+});
+// top and bottom shelves: plain books and a few objects
+[SHELF.ys[0], SHELF.ys[3]].forEach((y, k) => {
+  let x = -SHELF.w / 2 + .3;
+  while (x < SHELF.w / 2 - .3) {
+    if (Math.random() < .12) { const n = 3 + (Math.random() * 3 | 0); for (let i = 0; i < n; i++) box(.7, .1, .55, M({ color: fillers[(Math.random() * 8) | 0] }), x + .35, y + .05 + i * .1, -.05, sg); x += .85; continue; }
+    if (k === 1 && Math.random() < .08) { const v = new THREE.Mesh(new THREE.CylinderGeometry(.14, .2, .6, 24), M({ color: "#2b4597", roughness: .3 })); v.position.set(x + .2, y + .3, 0); v.castShadow = true; sg.add(v); x += .5; continue; }
+    const t = .12 + Math.random() * .14, h = .5 + Math.random() * .4; box(t, h, .6, M({ color: fillers[(Math.random() * fillers.length) | 0], roughness: .8 }), x + t / 2, y + h / 2, -.05, sg); x += t + .012;
+  }
+});
+
+// ---------------- the vision: a glowing window onto the site ----------------
+const visionG = new THREE.Group(); scene.add(visionG); visionG.visible = false;
+const VW = 3.0, VH = 1.875;
+const screenMat = new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false });
+const screen = new THREE.Mesh(new THREE.PlaneGeometry(VW, VH), screenMat); visionG.add(screen);
+const frame = new THREE.Mesh(new THREE.PlaneGeometry(VW + .14, VH + .14), new THREE.MeshBasicMaterial({ color: 0xf3d58e, toneMapped: false })); frame.position.z = -.01; visionG.add(frame);
+const haloTex = tex(256, 256, (g) => { const gr = g.createRadialGradient(128, 128, 10, 128, 128, 128); gr.addColorStop(0, "rgba(255,230,170,.75)"); gr.addColorStop(.5, "rgba(255,210,140,.25)"); gr.addColorStop(1, "rgba(255,210,140,0)"); g.fillStyle = gr; g.fillRect(0, 0, 256, 256); });
+const halo = new THREE.Mesh(new THREE.PlaneGeometry(VW * 1.9, VH * 2.1), new THREE.MeshBasicMaterial({ map: haloTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false })); halo.position.z = -.05; visionG.add(halo);
+// motes of light rising from the pages
+const motes = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({ color: 0xffe2a0, size: .05, transparent: true, opacity: .9, depthWrite: false, blending: THREE.AdditiveBlending }));
+const NM = 70, mp = new Float32Array(NM * 3), mseed = Array.from({ length: NM }, () => [Math.random() * 2 - 1, Math.random(), Math.random() * 2 - 1]);
+motes.geometry.setAttribute("position", new THREE.BufferAttribute(mp, 3)); scene.add(motes); motes.visible = false;
+
+const previews = {};
+function previewFor(p) {
+  const src = p.deck ? `images/${p.img}` : FULL.has(p.repo) ? `images/full/${p.repo}.jpg` : `images/${p.img}`;
+  if (!previews[src]) { const t = loader.load(src, (tt) => { tt.userData.ready = true; fitPreview(tt); }); t.colorSpace = THREE.SRGBColorSpace; previews[src] = t; }
+  return previews[src];
+}
+function fitPreview(t) {                               // show a 16:10 window of the page; tall pages scroll inside it
+  const img = t.image; if (!img) return;
+  const ratio = (VH / VW) * (img.width / img.height);
+  t.repeat.set(1, Math.min(1, ratio)); t.userData.scroll = ratio < 1; t.offset.set(0, 1 - t.repeat.y);
+}
+
+// ---------------- camera and interaction ----------------
+const camera = new THREE.PerspectiveCamera(38, 1, .1, 60);
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+let W = 1, H = 1, hover = null, active = null, parX = 0, parY = 0, tpx = 0, tpy = 0, panX = 0, panGoal = 0;
+function camBase() {
+  const aspect = W / H, narrow = aspect < 1;
+  const half = narrow ? 2.6 : 6.3;                       // how much of the room must fit across
+  const dist = Math.min(24, Math.max(8.4, half / (Math.tan(THREE.MathUtils.degToRad(19)) * aspect)));
+  const cx = narrow ? -.9 + panX : 0;
+  return { pos: new V3(cx + 1.2 + parX * .5, 2.6 + parY * .3 + (narrow ? .4 : 0), -4.05 + dist), look: new V3(cx - .4, 2.05, -4.05) };
+}
+function resize() {
+  const r = room.getBoundingClientRect(); W = r.width; H = r.height;
+  renderer.setSize(W, H, false); camera.aspect = W / H; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(room); resize();
+if (matchMedia("(max-width: 700px)").matches) room.querySelector(".hint").textContent = "Swipe along the shelf, tap a coloured book";
+
+function pick(e) {
+  const r = room.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  for (const h of ray.intersectObjects(books, true)) { let o = h.object; while (o && !o.userData.p) o = o.parent; if (o) return o; }
+  return null;
+}
+room.addEventListener("pointermove", (e) => {
+  const r = room.getBoundingClientRect(); tpx = (e.clientX - r.left) / r.width - .5; tpy = (e.clientY - r.top) / r.height - .5;
+  if (active || e.pointerType !== "mouse") return;
+  hover = pick(e); room.classList.toggle("hot", !!hover);
+  if (hover) { tip.innerHTML = `${hover.userData.p.name}<small>${hover.userData.p.deck ? "Pitch deck" : DOMAINS[hover.userData.p.dom].label}</small>`; tip.style.setProperty("--dc", hover.userData.D.c); tip.style.left = e.clientX - r.left + "px"; tip.style.top = e.clientY - r.top + "px"; }
+  tip.classList.toggle("on", !!hover);
+});
+let swipe = null;
+room.addEventListener("pointerdown", (e) => { swipe = { x: e.clientX, pan: panGoal, moved: false }; });
+room.addEventListener("pointermove", (e) => {
+  if (!swipe || active || W / H >= 1) return;
+  const dx = e.clientX - swipe.x; if (Math.abs(dx) > 6) swipe.moved = true;
+  panGoal = Math.max(-3.4, Math.min(3.4, swipe.pan - dx * .012));
+});
+room.addEventListener("pointerup", () => setTimeout(() => (swipe = null), 0));
+room.addEventListener("pointerleave", () => { hover = null; tip.classList.remove("on"); room.classList.remove("hot"); tpx = tpy = 0; });
+room.addEventListener("click", (e) => {
+  if (e.target.closest(".vision")) return;
+  if (swipe && swipe.moved) return;
+  if (active) { close(); return; }
+  const b = pick(e); if (b) open(b);
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && active) close(); });
+vision.querySelector(".x").addEventListener("click", close);
+
+function linksFor(p) {
+  if (p.deck) return `<a href="${p.live}" target="_blank" rel="noopener">Open deck ↗</a>` + (p.private ? "" : `<a class="ghost" href="${GH + p.repo}" target="_blank" rel="noopener">GitHub ↗</a>`);
+  return (p.live ? `<a href="${p.live}" target="_blank" rel="noopener">Visit site ↗</a>` : "") +
+    (p.private ? `<span class="lock">Private repo</span>` : `<a class="${p.live ? "ghost" : ""}" href="${GH + p.repo}" target="_blank" rel="noopener">GitHub ↗</a>`);
+}
+function open(b) {
+  if (active === b) return;
+  if (active) active.userData.goal = 0;
+  active = b; b.userData.goal = 1; b.userData.t0 = performance.now();
+  const p = b.userData.p, D = b.userData.D;
+  room.classList.add("open"); room.style.setProperty("--dc", D.c); tip.classList.remove("on");
+  vision.innerHTML = `<button class="x" type="button" aria-label="Close">×</button><div class="dom"><i></i>${p.deck ? "Pitch deck · " : ""}${DOMAINS[p.dom].label}</div><h3>${p.name}</h3><p class="q">${p.q}</p><div class="links">${linksFor(p)}</div>`;
+  vision.querySelector(".x").addEventListener("click", (e) => { e.stopPropagation(); close(); });
+  const t = previewFor(p); screenMat.map = t; screenMat.needsUpdate = true; if (t.image) fitPreview(t);
+  frame.material.color.set(mix(D.c, "#f3d58e", .55));
+  setTimeout(() => vision.querySelector(".x")?.focus({ preventScroll: true }), 700);
+}
+function close() {
+  if (!active) return;
+  active.userData.goal = 0; active = null;
+  room.classList.remove("open");
+}
+// the list under the room opens the same books
+document.querySelectorAll(".shelf-index button").forEach((btn) => btn.addEventListener("click", () => {
+  const b = books.find((x) => x.userData.p.name === btn.dataset.name); if (!b) return;
+  room.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "center" }); setTimeout(() => open(b), 350);
+}));
+
+// ---------------- theme ----------------
+function paintTheme() {
+  const night = dark();
+  glassMat.map = night ? sky.night : sky.day; glassMat.needsUpdate = true;
+  hemi.intensity = night ? .45 : 1.3; sun.intensity = night ? .55 : 2.6; sun.color.set(night ? "#8ea6ff" : "#fff1dc");
+  lamp.intensity = night ? 16 : 6; renderer.toneMappingExposure = night ? 1.25 : 1.05;
+  wallMat.color.set(night ? "#cbbfae" : "#efe3cf");
+}
+paintTheme();
+new MutationObserver(paintTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+// ---------------- the loop ----------------
+let visible = true;
+new IntersectionObserver(([e]) => (visible = e.isIntersecting)).observe(room);
+const clock = new THREE.Clock(), tmpQ = new THREE.Quaternion(), tmpM = new THREE.Matrix4(), up = new V3(0, 1, 0);
+function frameLoop() {
+  requestAnimationFrame(frameLoop);
+  const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
+  if (!visible) return;
+  panX += (panGoal - panX) * (1 - Math.exp(-dt * 6));
+  parX += ((still || active || W / H < 1 ? 0 : tpx) - parX) * (1 - Math.exp(-dt * 3)); parY += ((still || active || W / H < 1 ? 0 : tpy) - parY) * (1 - Math.exp(-dt * 3));
+  const cb = camBase(); camera.position.copy(cb.pos); camera.lookAt(cb.look);
+  earth.rotation.y += dt * .2;
+  // where an opened book is held: in front of the camera, a little low, tilted back
+  const fwd = cb.look.clone().sub(cb.pos).normalize(), right = new V3().crossVectors(fwd, up).normalize(), camUp = new V3().crossVectors(right, fwd);
+  const narrow = W / H < 1, readPos = cb.pos.clone().addScaledVector(fwd, narrow ? 6.4 : 5.4).addScaledVector(camUp, narrow ? -.55 : -1.0).addScaledVector(right, narrow ? 0 : .75);
+  let visionOn = 0, visionBook = null;
+  for (const b of books) {
+    const u = b.userData;
+    u.open += (u.goal - u.open) * (1 - Math.exp(-dt * (u.goal ? 2.2 : 3.2)));
+    u.pull += (((hover === b && !active) ? 1 : 0) - u.pull) * (1 - Math.exp(-dt * 10));
+    const k = ease(Math.min(1, u.open));
+    if (u.open < .001 && u.pull < .001) { b.position.copy(u.home.pos); b.quaternion.copy(u.home.quat); u.hinge.rotation.y = 0; continue; }
+    // home pose (pulled a little when hovered), in shelf space
+    const home = u.home.pos.clone(); home.z += u.pull * .18; home.y += u.pull * .04;
+    // reading pose, in shelf space
+    const target = sg.worldToLocal(readPos.clone());
+    const lookAtCam = sg.worldToLocal(cb.pos.clone());
+    tmpM.lookAt(lookAtCam, target, up); tmpQ.setFromRotationMatrix(tmpM);
+    const tilt = new THREE.Quaternion().setFromAxisAngle(new V3(1, 0, 0), -.32); const readQ = tmpQ.clone().multiply(tilt);
+    // the book arcs out of the shelf, turns to face you, then opens
+    const arc = Math.sin(k * Math.PI) * .6;
+    b.position.lerpVectors(home, target, k); b.position.z += arc;
+    b.quaternion.slerpQuaternions(u.home.quat, readQ, smooth(.15, .85, k));
+    u.hinge.rotation.y = -2.75 * smooth(.62, 1, u.open);
+    if (u.open > visionOn) { visionOn = u.open; visionBook = b; }
+  }
+  // the vision rises above the open book
+  const vk = smooth(.72, 1, visionOn);
+  visionG.visible = motes.visible = vk > .01;
+  if (visionG.visible && visionBook) {
+    const base = new V3(); visionBook.getWorldPosition(base);
+    visionG.position.copy(base).addScaledVector(camUp, (narrow ? .95 : 1.25) + .15 * vk).addScaledVector(fwd, .3);
+    visionG.quaternion.copy(camera.quaternion);
+    const s = .2 + .8 * vk; visionG.scale.setScalar(s * (narrow ? .58 : 1.18));
+    halo.material.opacity = .7 + Math.sin(t * 2.2) * .15;
+    const tx = screenMat.map;
+    if (tx && tx.userData.scroll) { const span = 1 - tx.repeat.y, ph = (Math.sin(t * .22 - Math.PI / 2) + 1) / 2; tx.offset.y = span * (1 - ph); }
+    for (let i = 0; i < NM; i++) { const [a, f, c] = mseed[i], life = (f + t * .25) % 1; mp[i * 3] = base.x + a * .9 * (1 - life * .4); mp[i * 3 + 1] = base.y + .1 + life * 1.8; mp[i * 3 + 2] = base.z + c * .5; }
+    motes.geometry.attributes.position.needsUpdate = true; motes.material.opacity = vk * .9;
+  }
+  // dim the room a little while a vision is open
+  const dim = 1 - .45 * smooth(.3, 1, visionOn);
+  hemi.intensity = (dark() ? .45 : 1.3) * dim; sun.intensity = (dark() ? .55 : 2.6) * dim;
+  renderer.render(scene, camera);
+}
+frameLoop();
+
 </script>
 </body>
 </html>
