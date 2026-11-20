@@ -806,16 +806,17 @@ const heroParts = {};
     const f = new THREE.Mesh(new THREE.BoxGeometry(.19, .11, .34), shoe); f.position.set(0, -.86, .06); f.castShadow = true; l.add(f);
     const so = new THREE.Mesh(new THREE.BoxGeometry(.2, .05, .35), sole); so.position.set(0, -.92, .06); l.add(so);
   });
-  const body = new THREE.Mesh(new THREE.CapsuleGeometry(.24, .48, 6, 16), shirt); body.position.y = .38; body.scale.set(1, 1, .82); body.castShadow = true; hips.add(body); heroParts.body = body;
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(.24, .44, 6, 16), shirt); body.position.y = .5; body.scale.set(1, 1, .82); body.castShadow = true; hips.add(body); heroParts.body = body;
   // collar and a loose tie
   const collar = new THREE.Mesh(new THREE.TorusGeometry(.13, .045, 8, 20), shirt); collar.rotation.x = Math.PI / 2; collar.position.y = .8; hips.add(collar);
   const knot = new THREE.Mesh(new THREE.BoxGeometry(.08, .07, .06), tie); knot.position.set(0, .73, .2); hips.add(knot);
   const tieB = new THREE.Mesh(new THREE.BoxGeometry(.09, .32, .03), tie); tieB.position.set(.01, .52, .21); tieB.rotation.z = .08; hips.add(tieB);
-  const belt = new THREE.Mesh(new THREE.CylinderGeometry(.245, .245, .09, 20), trousers); belt.position.y = .06; belt.scale.z = .82; hips.add(belt);
+  const seat = new THREE.Mesh(new THREE.CylinderGeometry(.25, .22, .3, 24), trousers); seat.position.y = .02; seat.scale.z = .84; hips.add(seat);           // the trousers' waist, the shirt tucked in
+  const belt = new THREE.Mesh(new THREE.CylinderGeometry(.258, .258, .07, 24), M({ color: "#1d2236" })); belt.position.y = .17; belt.scale.z = .86; hips.add(belt);
   const bag = new THREE.Mesh(new THREE.BoxGeometry(.38, .46, .17), pack); bag.position.set(0, .44, -.3); bag.castShadow = true; hips.add(bag);
   heroParts.armL = limb(.07, .5, shirt); heroParts.armL.position.set(-.31, .72, 0); heroParts.armL.rotation.z = -.08; hips.add(heroParts.armL);
   heroParts.armR = limb(.07, .5, shirt); heroParts.armR.position.set(.31, .72, 0); heroParts.armR.rotation.z = .08; hips.add(heroParts.armR);
-  [heroParts.armL, heroParts.armR].forEach((a) => { const h = new THREE.Mesh(new THREE.SphereGeometry(.075, 12, 10), skin); h.position.y = -.7; a.add(h); });
+  [heroParts.armL, heroParts.armR].forEach((a) => { const h = new THREE.Mesh(new THREE.SphereGeometry(.062, 16, 12), skin); h.scale.set(.85, 1.15, .8); h.position.y = -.68; a.add(h); });
   const neck = new THREE.Mesh(new THREE.CylinderGeometry(.07, .08, .14, 12), skin); neck.position.y = .88; hips.add(neck);
 
   // the head: a big face with drawn manga eyes (open and blinking versions)
@@ -1106,7 +1107,7 @@ function placeTV() {
   // the shadow area is fixed, so your shadow never shimmers
   if (touchy) sun.shadow.mapSize.set(2048, 2048);
   // only you cast a shadow; nothing else in the building does
-  scene.traverse((o) => { if (!o.isMesh) return; let mine = false; for (let a = o; a; a = a.parent) if (a === hero) mine = true; o.castShadow = mine && !o.userData.ink; });
+  scene.traverse((o) => { if (!o.isMesh) return; let mine = false; for (let a = o; a; a = a.parent) if (a === hero) mine = true; o.castShadow = mine && !o.userData.ink; if (mine) o.receiveShadow = false; });
 }
 // keep it smooth: lower the render resolution a little when frames run slow, raise it when there's headroom
 const PR_MAX = Math.min(devicePixelRatio, 2); let pr = Math.min(PR_MAX, 1.5), slow = 0, fast = 0;
