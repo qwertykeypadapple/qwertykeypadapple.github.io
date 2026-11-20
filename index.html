@@ -393,9 +393,10 @@ themeBtn.addEventListener("click", () => {
 });
 syncThemeLabel();
 </script>
-<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }</script>
 <script type="module">
 import * as THREE from "three";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 await document.fonts.ready;
 
 const room = document.getElementById("room");
@@ -508,7 +509,7 @@ const cyl = (r1, r2, h, mat, y, p) => { const m = new THREE.Mesh(new THREE.Cylin
 cyl(.22, .26, .05, brass, .025, lampG); cyl(.03, .03, .9, brass, .5, lampG);
 const shadeM = M({ color: "#1f5f4a", side: THREE.DoubleSide, roughness: .5 }); cyl(.16, .34, .3, shadeM, 1.0, lampG).material = shadeM;
 const bulb = new THREE.Mesh(new THREE.SphereGeometry(.08, 16, 12), new THREE.MeshBasicMaterial({ color: "#ffe2a8" })); bulb.position.y = .9; lampG.add(bulb);
-const globe = new THREE.Group(); globe.position.set(.55, 1.27, .05); desk.add(globe);
+const globe = new THREE.Group(); globe.position.set(.55, 1.27, .05); desk.add(globe); globe.userData.dynamic = true;
 cyl(.14, .18, .04, brass, .02, globe); cyl(.02, .02, .3, brass, .17, globe);
 const earth = new THREE.Mesh(new THREE.SphereGeometry(.3, 32, 24), M({ map: tex(256, 128, (g) => { g.fillStyle = "#3b6fb0"; g.fillRect(0, 0, 256, 128); g.fillStyle = "#c9b27a"; [[40, 40, 30, 22], [90, 70, 22, 30], [150, 40, 40, 20], [200, 80, 26, 18], [120, 100, 18, 10]].forEach(([x, y, a, b]) => { g.beginPath(); g.ellipse(x, y, a, b, .4, 0, 7); g.fill(); }); }), roughness: .5 }));
 earth.position.y = .62; earth.rotation.z = .4; earth.castShadow = true; globe.add(earth);
@@ -549,7 +550,7 @@ function makeBook(p, D, h, t, wDepth) {
   box(wDepth - .04, h - .05, t - .05, pagesMat, .01, 0, 0, g);
   const hinge = new THREE.Group(); hinge.position.set(-wDepth / 2, 0, t / 2 - .0125); g.add(hinge);
   const front = box(wDepth, h, .025, [coverM, coverM, coverM, coverM, M({ map: coverTex(p, D), roughness: .5 }), M({ color: "#efe4cc" })], wDepth / 2, 0, 0, hinge);
-  g.userData = { p, D, hinge, h, t };
+  g.userData = { p, D, hinge, h, t, dynamic: true };
   [back, spine, front].forEach((m) => (m.userData.book = g));
   g.children.forEach((m) => (m.userData.book = g));
   return g;
@@ -768,10 +769,10 @@ wallZ(HALL.x1, HALL.x1 + T, HALL.z0, HALL.z1, gapsFor(1), HALL.h, hallWall);
 });
 // every doorway gets a frame in its project's colour and a doormat
 for (const c of cinemas) {
-  const x = c.side < 0 ? HALL.x0 : HALL.x1, inward = -c.side, fm = M({ color: mix(c.D.c, "#fbf6ec", .68) });
+  const x = c.side < 0 ? HALL.x0 : HALL.x1, inward = -c.side, fm = M({ color: "#e6d8c0" });
   [-1.22, 1.22].forEach((dz) => box(.38, 4.08, .22, fm, x + inward * .05, 2.04, c.zc + dz, scene));     // inner faces sit just inside the opening
   box(.38, .32, 2.68, fm, x + inward * .05, 4.07, c.zc, scene);                                         // and the header just below the wall's lintel
-  const mat = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 2.0), M({ color: mix(c.D.c, "#fbf6ec", .78) })); mat.rotation.x = -Math.PI / 2; mat.position.set(x + inward * .85, .015, c.zc); mat.receiveShadow = true; scene.add(mat);
+  const mat = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 2.0), M({ color: mix(c.D.c, "#efe6d6", .86) })); mat.rotation.x = -Math.PI / 2; mat.position.set(x + inward * .85, .015, c.zc); mat.receiveShadow = true; scene.add(mat);
 }
 for (let k = 0; k <= PER_SIDE; k++) {
   const z = roomZ0(k) + ROOM.w + T / 2 - (k === 0 ? 0 : 0);
@@ -791,7 +792,7 @@ function slide(c, k) {
 }
 
 // ---------------- you: a small character the camera follows ----------------
-const hero = new THREE.Group(); scene.add(hero);
+const hero = new THREE.Group(); scene.add(hero); hero.userData.dynamic = true;
 const heroParts = {};
 {
   // a manga-style student: big head, huge glossy eyes, spiky hair, slim limbs
@@ -1013,8 +1014,35 @@ paintTheme();
 new MutationObserver(paintTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
 ink(hero, .022); ink(scene);
+// smoothness: the building never moves, so draw all pieces that look alike as one mesh.
+// The originals stay in place, hidden, for collisions and the camera's wall checks.
+function bake(root) {
+  root.updateMatrixWorld(true);
+  const groups = new Map();
+  root.traverse((o) => {
+    if (!o.isMesh || Array.isArray(o.material) || !o.visible) return;
+    for (let a = o; a; a = a.parent) if (a.userData.dynamic) return;
+    if (o.children.some((c) => !(c.isMesh && c.userData.ink))) return;
+    const m = o.material, key = [m.type, m.color?.getHexString(), m.map?.uuid, m.side, m.transparent, m.opacity, m.emissive?.getHexString(), m.emissiveIntensity, m.toneMapped].join("|");
+    let g = groups.get(key); if (!g) groups.set(key, (g = { mat: m, list: [] }));
+    g.list.push(o);
+  });
+  let merged = 0;
+  for (const g of groups.values()) {
+    if (g.list.length < 2) continue;
+    const geos = g.list.map((o) => { const ge = (o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone()); for (const k of Object.keys(ge.attributes)) if (!["position", "normal", "uv"].includes(k)) ge.deleteAttribute(k); if (!ge.attributes.uv) return null; ge.clearGroups(); ge.applyMatrix4(o.matrixWorld); return ge; });
+    if (geos.some((x) => !x)) continue;
+    const geo = mergeGeometries(geos, false); if (!geo) continue;
+    const mesh = new THREE.Mesh(geo, g.mat); mesh.castShadow = g.list.some((o) => o.castShadow); mesh.receiveShadow = g.list.some((o) => o.receiveShadow);
+    mesh.userData.baked = true; mesh.raycast = () => {}; scene.add(mesh);
+    g.list.forEach((o) => (o.material = HIDE)); merged += g.list.length;
+  }
+  return merged;
+}
+const HIDE = new THREE.MeshBasicMaterial({ visible: false });
+bake(scene);
 scene.updateMatrixWorld(true);            // walls must be in place before the camera checks them on the first frame
-window.__dbg = { me };      // lets automated checks move you around
+window.__dbg = { me, renderer };      // lets automated checks move you around
 
 // the card for the cinema you're standing in
 let shown = null;
@@ -1068,14 +1096,36 @@ function placeTV() {
   tv.style.opacity = performance.now() - watchT > 900 ? 1 : 0;
 }
 
+// one fixed shadow area over the whole building: the shadow map never moves, so nothing shimmers
+{
+  const big = renderer.capabilities.maxTextureSize >= 4096 ? 4096 : 2048, mid = new V3(0, 0, 30.8), dir = new V3(-9, 9, 4).normalize();
+  sun.target.position.copy(mid); sun.position.copy(mid).addScaledVector(dir, 40);
+  sun.shadow.mapSize.set(big, big); sun.shadow.map?.dispose(); sun.shadow.map = null;
+  Object.assign(sun.shadow.camera, { left: -44, right: 44, top: 44, bottom: -44, near: 5, far: 90 }); sun.shadow.camera.updateProjectionMatrix();
+  sun.shadow.bias = -.0008; sun.shadow.normalBias = .04;
+  // the shadow area is fixed, so your shadow never shimmers
+  if (touchy) sun.shadow.mapSize.set(2048, 2048);
+  // only you cast a shadow; nothing else in the building does
+  scene.traverse((o) => { if (!o.isMesh) return; let mine = false; for (let a = o; a; a = a.parent) if (a === hero) mine = true; o.castShadow = mine && !o.userData.ink; });
+}
+// keep it smooth: lower the render resolution a little when frames run slow, raise it when there's headroom
+const PR_MAX = Math.min(devicePixelRatio, 2); let pr = Math.min(PR_MAX, 1.5), slow = 0, fast = 0;
+renderer.setPixelRatio(pr);
+function adapt(dt) {
+  if (dt > 1 / 45) { slow += dt; fast = 0; } else if (dt < 1 / 58) { fast += dt; slow = 0; }
+  if (slow > .8 && pr > .75) { pr = Math.max(.75, pr - .25); renderer.setPixelRatio(pr); resize(); slow = 0; }
+  else if (fast > 4 && pr < PR_MAX) { pr = Math.min(PR_MAX, pr + .25); renderer.setPixelRatio(pr); resize(); fast = 0; }
+}
+
 // ---------------- the loop ----------------
 let visible = true;
 new IntersectionObserver(([e]) => (visible = e.isIntersecting)).observe(room);
 const clock = new THREE.Clock(), tmpQ = new THREE.Quaternion(), tmpM = new THREE.Matrix4(), up = new V3(0, 1, 0);
 function frameLoop() {
   requestAnimationFrame(frameLoop);
-  const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
+  const raw = clock.getDelta(), dt = Math.min(raw, .05), t = clock.elapsedTime;
   if (!visible) return;
+  if (!still) adapt(raw);
   // walking
   let ix = 0, iz = 0;
   if (!active && !watching) {
@@ -1119,7 +1169,6 @@ function frameLoop() {
   const cb = { pos: camera.position.clone(), look: camera.position.clone().add(camera.getWorldDirection(new V3())) };
   earth.rotation.y += dt * .2;
   // the sun follows you so shadows stay crisp everywhere
-  { const gx = Math.round(me.x / 4) * 4, gz = Math.round(me.z / 4) * 4; if (gx !== sun.userData.gx || gz !== sun.userData.gz) { sun.userData.gx = gx; sun.userData.gz = gz; sun.position.set(gx - 9, 9, gz + 4); sun.target.position.set(gx, 0, gz); } }
   let inside = null;
   for (const c of cinemas) {
     const d = Math.hypot(me.x - (c.xa + c.xb) / 2, me.z - c.zc);
