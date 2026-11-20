@@ -136,7 +136,7 @@
   .room { cursor: grab; outline: none; }
   .room.looking { cursor: grabbing; }
   .room:focus-visible { box-shadow: 0 0 0 3px var(--accent), 0 30px 70px rgba(60, 40, 20, .22); }
-  .stick { display: none; position: absolute; left: 18px; bottom: 18px; width: 116px; height: 116px; border-radius: 50%; touch-action: none;
+  .stick { display: none; position: absolute; left: 18px; bottom: 18px; transition: bottom .35s; width: 116px; height: 116px; border-radius: 50%; touch-action: none;
     background: rgba(255, 252, 245, .28); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .55), 0 6px 18px rgba(0, 0, 0, .18); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
   .stick i { position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: rgba(255, 255, 255, .85); box-shadow: 0 4px 12px rgba(0, 0, 0, .25); }
   @media (hover: none) { .stick { display: block; } }
@@ -257,7 +257,10 @@
   .room.open .roomcard { opacity: 0 !important; pointer-events: none !important; }
   @media (max-width: 700px) {
     .room .title { font-size: 13px; top: 10px; left: 10px; }
-    .vision.roomcard { left: 12px; right: 12px; bottom: auto; top: 56px; width: auto; }
+    .vision.roomcard { left: 10px; right: 10px; bottom: 10px; top: auto; width: auto; padding: 12px 14px; }
+    .vision.roomcard h3 { font-size: 24px; margin: 4px 0 2px; }
+    .vision.roomcard .q { font-size: 16px; margin-bottom: 10px; }
+    .room.inroom .stick { bottom: calc(var(--cardh, 180px) + 22px); }
   }
 
   /* the live site on the TV */
@@ -1009,6 +1012,7 @@ function showRoom(c) {
   const p = c.p; room.style.setProperty("--dc", c.D.c);
   roomCard.innerHTML = `<div class="dom"><i></i>${p.deck ? "Pitch deck · " : ""}${DOMAINS[p.dom].label}</div><h3>${p.name}</h3><p class="q">${p.q}</p><div class="links"><a href="#" class="watch">▶ Watch on the screen</a>${linksFor(p).replace(/<a href/, '<a class="ghost" href')}</div>`;
   roomCard.querySelector(".watch").addEventListener("click", (e) => { e.preventDefault(); startWatching(c); });
+  requestAnimationFrame(() => room.style.setProperty("--cardh", roomCard.offsetHeight + "px"));      // the joystick sits just above the card
 }
 
 // ---------------- watching a screen: the real site, live, right on the TV ----------------
