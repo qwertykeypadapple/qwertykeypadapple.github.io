@@ -32,7 +32,7 @@ const MAX = 8;
   const index = fs.existsSync(indexFile) ? JSON.parse(fs.readFileSync(indexFile, "utf8")) : {};
   const browser = await chromium.launch();
   for (const [name, url, how] of SITES.filter(([n]) => !only.length || only.includes(n))) {
-    const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+    const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 2 });
     try {
       await page.goto(url, { waitUntil: "load", timeout: 150000 });
       await page.waitForTimeout(3000);

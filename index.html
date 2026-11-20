@@ -419,9 +419,11 @@ const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a
 const mix = (a, b, t) => "#" + new THREE.Color(a).lerp(new THREE.Color(b), t).getHexString();
 
 // ---------------- painted textures ----------------
-function tex(w, h, draw, repeat) {
-  const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+const ttex = (S, w, h, draw) => tex(w, h, draw, null, S);          // text: painted at S times the resolution
+function tex(w, h, draw, repeat, S = 1) {
+  const c = document.createElement("canvas"); c.width = Math.round(w * S); c.height = Math.round(h * S);
+  const g = c.getContext("2d"); g.scale(S, S); g.imageSmoothingQuality = "high"; draw(g, w, h);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
   if (repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(...repeat); }
   return t;
 }
@@ -515,7 +517,7 @@ const earth = new THREE.Mesh(new THREE.SphereGeometry(.3, 32, 24), M({ map: tex(
 earth.position.y = .62; earth.rotation.z = .4; earth.castShadow = true; globe.add(earth);
 // a framed note on the wall
 box(1.5, 1.0, .05, M({ color: "#2b2f3f" }), 4.6, 3.1, -4.55, scene);
-box(1.34, .84, .02, M({ map: tex(256, 160, (g) => { g.fillStyle = "#f6efe2"; g.fillRect(0, 0, 256, 160); g.fillStyle = "#1c2033"; g.font = "italic 400 34px 'Patrick Hand', cursive"; g.textAlign = "center"; g.fillText("Things I've", 128, 72); g.fillStyle = "#9a7636"; g.fillText("built.", 128, 116); }) }), 4.6, 3.1, -4.52, scene);
+box(1.34, .84, .02, M({ map: ttex(3, 256, 160, (g) => { g.fillStyle = "#f6efe2"; g.fillRect(0, 0, 256, 160); g.fillStyle = "#1c2033"; g.font = "italic 400 34px 'Patrick Hand', cursive"; g.textAlign = "center"; g.fillText("Things I've", 128, 72); g.fillStyle = "#9a7636"; g.fillText("built.", 128, 116); }) }), 4.6, 3.1, -4.52, scene);
 
 // ---------------- books ----------------
 const loader = new THREE.TextureLoader();
@@ -524,7 +526,7 @@ const ORDER = ["fintech", "fl", "algo", "auto", "health", "social", "edu", "indu
 const items = projects.slice().sort((a, b) => ORDER.indexOf(a.dom) - ORDER.indexOf(b.dom));
 const rows = [items.filter((p) => ["fintech", "fl", "algo"].includes(p.dom)), items.filter((p) => !["fintech", "fl", "algo"].includes(p.dom))];
 const books = [];
-const spineTex = (p, D, h) => tex(128, 512, (g, w, H) => {
+const spineTex = (p, D, h) => ttex(2, 128, 512, (g, w, H) => {
   const gr = g.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, mix(D.c, "#000", .35)); gr.addColorStop(.5, D.c); gr.addColorStop(1, mix(D.c, "#000", .3));
   g.fillStyle = gr; g.fillRect(0, 0, w, H); g.fillStyle = "#d9b46a";
   [[24, 6], [38, 2], [H - 44, 2], [H - 30, 6]].forEach(([y, t]) => g.fillRect(8, y, w - 16, t));
@@ -533,7 +535,7 @@ const spineTex = (p, D, h) => tex(128, 512, (g, w, H) => {
   let size = 44; g.font = `500 ${size}px 'Patrick Hand', cursive`; while (g.measureText(p.name).width > H - 150 && size > 20) { size -= 2; g.font = `500 ${size}px 'Patrick Hand', cursive`; }
   g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(p.name, 0, 2); g.restore();
 });
-const coverTex = (p, D) => tex(256, 360, (g, w, h) => {
+const coverTex = (p, D) => ttex(2, 256, 360, (g, w, h) => {
   g.fillStyle = D.c; g.fillRect(0, 0, w, h); g.strokeStyle = "#d9b46a"; g.lineWidth = 4; g.strokeRect(16, 16, w - 32, h - 32); g.lineWidth = 1.5; g.strokeRect(24, 24, w - 48, h - 48);
   g.fillStyle = "#f3dfae"; g.textAlign = "center"; let size = 34; g.font = `500 ${size}px 'Patrick Hand', cursive`; while (g.measureText(p.name).width > w - 70) { size -= 2; g.font = `500 ${size}px 'Patrick Hand', cursive`; }
   g.fillText(p.name, w / 2, h / 2); g.font = "600 11px 'Patrick Hand', cursive"; g.fillText(DOMAINS[p.dom].label.toUpperCase(), w / 2, h / 2 + 34);
@@ -581,7 +583,7 @@ rows.forEach((row, ri) => {
   // small brass plaques naming each field
   plaques.forEach(({ dom, x0, x1 }) => {
     const D = DOMAINS[dom], w = Math.max(.7, x1 - x0);
-    box(w, .13, .02, M({ map: tex(512, 64, (g) => { g.fillStyle = "#c9a24f"; g.fillRect(0, 0, 512, 64); g.fillStyle = "#3a2a10"; g.font = "600 30px 'Patrick Hand', cursive"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(D.label.toUpperCase(), 256, 34); }), metalness: .6, roughness: .35 }), (x0 + x1) / 2, y - .04, SHELF.d / 2 + .012, sg);
+    box(w, .13, .02, M({ map: ttex(2, 512, 64, (g) => { g.fillStyle = "#c9a24f"; g.fillRect(0, 0, 512, 64); g.fillStyle = "#3a2a10"; g.font = "600 30px 'Patrick Hand', cursive"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(D.label.toUpperCase(), 256, 34); }), metalness: .6, roughness: .35 }), (x0 + x1) / 2, y - .04, SHELF.d / 2 + .012, sg);
   });
 });
 // a tall stoneware floor vase with eucalyptus branches, in the corner by the shelf
@@ -695,7 +697,7 @@ const ceilM = M({ color: "#f4ece0", side: THREE.DoubleSide });
 const hallCeil = new THREE.Mesh(new THREE.PlaneGeometry(HALL.x1 - HALL.x0 + .6, HALL.z1 - HALL.z0), ceilM); hallCeil.rotation.x = Math.PI / 2; hallCeil.position.set(3.2, HALL.h, (HALL.z0 + HALL.z1) / 2); scene.add(hallCeil);
 // the far end of the hall, with the welcome sign
 solid(HALL.x0 - T, HALL.x1 + T, HALL.z1, HALL.z1 + T, HALL.h, hallWall);
-{ const sign = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 2.2), new THREE.MeshBasicMaterial({ toneMapped: false, map: tex(1024, 352, (g, w, h) => {
+{ const sign = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 2.2), new THREE.MeshBasicMaterial({ toneMapped: false, map: ttex(2, 1024, 352, (g, w, h) => {
     g.fillStyle = "#fffdf7"; g.fillRect(0, 0, w, h); g.strokeStyle = "#1f1d22"; g.lineWidth = 14; g.strokeRect(7, 7, w - 14, h - 14);
     g.fillStyle = "#1f1d22"; g.textAlign = "center"; g.font = "112px 'Patrick Hand', cursive"; g.fillText("THINGS I'VE BUILT.", w / 2, 170);
     g.fillStyle = "#3fa58d"; let fs = 52; const line = "EVERY DOOR IS A PROJECT · THE LIBRARY IS AT THE END"; g.font = `${fs}px 'Patrick Hand', cursive`; while (g.measureText(line).width > w - 90) { fs -= 2; g.font = `${fs}px 'Patrick Hand', cursive`; } g.fillText(line, w / 2, 262); }) }));
@@ -707,11 +709,14 @@ const SLIDES = await fetch("images/slides/index.json").then((r) => r.json()).cat
 const EMBED_BLOCKED = new Set(["thinking-outside-the-box"]);      // sends X-Frame-Options: DENY
 const EMBED = { "neural-debris-solution": "https://qwertykeypadapple.github.io/neural-debris-solution/attempt-map.html" };
 const VID = { "FedAML Pitch": "fedaml-pitch", "FedAML Results": "fedaml-results", "Battery Pitch": "battery-pitch-deck" };
-const cinemaList = projects.slice().sort((a, b) => ORDER2.indexOf(a.dom) - ORDER2.indexOf(b.dom));
+// rooms come in facing pairs from the entrance: the bearing pitch and its results first, then social & games, then the rest by field
+const FIRST = ["Bearing Collective", "Ask the Vibration", "Nukkad AI", "PokéWords"];
+const cinemaList = [...FIRST.map((n) => projects.find((p) => p.name === n)).filter(Boolean),
+  ...projects.filter((p) => !FIRST.includes(p.name)).sort((a, b) => ORDER2.indexOf(a.dom) - ORDER2.indexOf(b.dom))];
 const PER_SIDE = Math.ceil(cinemaList.length / 2), PITCH = ROOM.w + T;
 const roomZ0 = (i) => HALL.z1 - T - (i + 1) * PITCH + T;     // rooms are counted from the entrance end
 const cinemas = [];
-const marquee = (p, D) => tex(1024, 300, (g, w, h) => {
+const marquee = (p, D) => ttex(2, 1024, 300, (g, w, h) => {
   g.fillStyle = "#1f1d22"; g.fillRect(0, 0, w, h);
   g.fillStyle = mix(D.c, "#fbf6ec", .6); g.fillRect(16, 16, w - 32, h - 32);
   g.fillStyle = "#fffdf7"; g.fillRect(30, 30, w - 60, h - 60);
@@ -724,7 +729,7 @@ const ANISO = renderer.capabilities.getMaxAnisotropy();
 const posterLoad = (src) => { const t = loader.load(src); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; };
 const carpet = M({ color: "#4a2f45" }), frameInk = M({ color: "#1f1d22" });
 cinemaList.forEach((p, i) => {
-  const D = DOMAINS[p.dom], side = i < PER_SIDE ? -1 : 1, k = i % PER_SIDE;
+  const D = DOMAINS[p.dom], side = i % 2 === 0 ? -1 : 1, k = Math.floor(i / 2);      // pair k: left and right, facing each other
   const z0 = roomZ0(k), z1 = z0 + ROOM.w, zc = (z0 + z1) / 2;
   const xIn = side < 0 ? HALL.x0 - T : HALL.x1 + T, xFar = xIn + side * ROOM.d;          // doorway side and screen side
   const xa = Math.min(xIn, xFar), xb = Math.max(xIn, xFar);
@@ -736,7 +741,7 @@ cinemaList.forEach((p, i) => {
   // the screen: a poster frame until you come near, then the site's video
   const sw = 5.6, sh = 3.15, sx = xFar - side * .08;
   const key = VID[p.name] || p.repo, nSlides = SLIDES[key] || 1;
-  const poster = posterLoad(`images/slides/${key}-1.jpg`);
+  const poster = posterLoad(`images/slides/${key}-1.webp`);
   const screenM = new THREE.MeshBasicMaterial({ map: poster, toneMapped: false });
   const scr = new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), screenM); scr.userData.cinema = cinemas.length;
   const fadeM = new THREE.MeshBasicMaterial({ toneMapped: false, transparent: true, opacity: 0, depthWrite: false });
@@ -748,22 +753,24 @@ cinemaList.forEach((p, i) => {
   const chairPos = new V3(xFar - side * 3.4, 0, zc);
   { const ch = new THREE.Group(); ch.position.copy(chairPos); ch.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2; scene.add(ch);
     const fabric = M({ color: "#e6d8c0" }), cushion = M({ color: "#f3ebdd" }), wood = M({ color: "#8a6a4a" });
-    box(.98, .26, .86, fabric, 0, .47, 0, ch); box(.86, .12, .74, cushion, 0, .66, -.02, ch);
-    box(.98, 1.0, .2, fabric, 0, 1.02, .38, ch); box(.84, .78, .08, cushion, 0, 1.06, .25, ch);
-    [-.53, .53].forEach((x) => box(.14, .34, .84, fabric, x, .78, 0, ch));
-    [[-.4, -.34], [.4, -.34], [-.4, .34], [.4, .34]].forEach(([x, z]) => box(.08, .34, .08, wood, x, .17, z, ch));
+    // parts overlap by clear margins (no two faces within a few cm), so nothing flickers at the corners
+    box(.98, .26, .86, fabric, 0, .47, 0, ch); box(.8, .1, .66, cushion, 0, .64, -.04, ch);
+    box(.98, 1.0, .2, fabric, 0, 1.02, .4, ch); box(.78, .7, .06, cushion, 0, 1.08, .26, ch);
+    [-.55, .55].forEach((x) => box(.14, .3, .66, fabric, x, .76, .02, ch));
+    [[-.38, -.32], [.38, -.32], [-.38, .32], [.38, .32]].forEach(([x, z]) => box(.08, .34, .08, wood, x, .17, z, ch));
+    ch.traverse((o) => (o.userData.noInk = true));                     // overlapping outlines were what flickered
     SOLIDS.push([chairPos.x - .55, chairPos.x + .55, zc - .55, zc + .55]); }
   // posters from the site along the side walls
   [[0, 1], [1, 2], [2, 3]].forEach(([n, f]) => {
     const onNear = n < 2, pz = onNear ? z0 + .02 : z1 - .02, px = xFar - side * (n === 1 ? 6.4 : 3.6);
     const g = new THREE.Group(); g.position.set(px, 2.7, pz); g.rotation.y = onNear ? 0 : Math.PI; scene.add(g);
     box(2.36, 1.56, .06, frameInk, 0, 0, .03, g);
-    const ph = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 1.4), new THREE.MeshBasicMaterial({ map: posterLoad(`images/slides/${key}-${Math.min(nSlides, f + 1)}.jpg`), toneMapped: false })); ph.position.z = .07; g.add(ph);
+    const ph = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 1.4), new THREE.MeshBasicMaterial({ map: posterLoad(`images/slides/${key}-${Math.min(nSlides, f + 1)}.webp`), toneMapped: false })); ph.position.z = .07; g.add(ph);
   });
   // the doorway in the hall wall, with a marquee sign over it and an exit sign inside
   const sign = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 1.0), new THREE.MeshBasicMaterial({ map: marquee(p, D), toneMapped: false }));
   sign.position.set(side < 0 ? HALL.x0 + .06 : HALL.x1 - .06, 4.85, zc); sign.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2; scene.add(sign);
-  const exitS = new THREE.Mesh(new THREE.PlaneGeometry(.9, .32), new THREE.MeshBasicMaterial({ toneMapped: false, map: tex(256, 92, (g) => { g.fillStyle = "#2f9e6a"; g.fillRect(0, 0, 256, 92); g.fillStyle = "#fff"; g.font = "64px 'Patrick Hand', cursive"; g.textAlign = "center"; g.fillText("EXIT", 128, 70); }) }));
+  const exitS = new THREE.Mesh(new THREE.PlaneGeometry(.9, .32), new THREE.MeshBasicMaterial({ toneMapped: false, map: ttex(3, 256, 92, (g) => { g.fillStyle = "#2f9e6a"; g.fillRect(0, 0, 256, 92); g.fillStyle = "#fff"; g.font = "64px 'Patrick Hand', cursive"; g.textAlign = "center"; g.fillText("EXIT", 128, 70); }) }));
   exitS.position.set(xIn + side * .06, 4.4, zc); exitS.rotation.y = side < 0 ? -Math.PI / 2 : Math.PI / 2; scene.add(exitS);
   const url = EMBED[p.repo] || p.live || null;
   cinemas.push({ fadeM, chairPos, p, D, side, xa, xb, z0, z1, zc, screenM, poster, key, nSlides, si: 0, tex: [poster], url, live: !!url && !EMBED_BLOCKED.has(p.repo), scr, sw, sh, normal: new V3(-side, 0, 0), door: new V3(side < 0 ? HALL.x0 : HALL.x1, 0, zc) });
@@ -782,8 +789,8 @@ wallZ(HALL.x1, HALL.x1 + T, HALL.z0, HALL.z1, gapsFor(1), HALL.h, hallWall);
 // every doorway gets a frame in its project's colour and a doormat
 for (const c of cinemas) {
   const x = c.side < 0 ? HALL.x0 : HALL.x1, inward = -c.side, fm = M({ color: "#e6d8c0" });
-  [-1.22, 1.22].forEach((dz) => box(.38, 4.08, .22, fm, x + inward * .05, 2.04, c.zc + dz, scene));     // inner faces sit just inside the opening
-  box(.38, .32, 2.68, fm, x + inward * .05, 4.07, c.zc, scene);                                         // and the header just below the wall's lintel
+  [-1.22, 1.22].forEach((dz) => WALLS.push(box(.38, 4.08, .22, fm, x + inward * .05, 2.04, c.zc + dz, scene)));     // inner faces sit just inside the opening; the camera treats them as walls
+  WALLS.push(box(.38, .32, 2.68, fm, x + inward * .05, 4.07, c.zc, scene));                                         // and the header just below the wall's lintel
   const mat = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 2.0), M({ color: mix(c.D.c, "#efe6d6", .86) })); mat.userData.isFloor = true; mat.rotation.x = -Math.PI / 2; mat.position.set(x + inward * .85, .015, c.zc); mat.receiveShadow = true; scene.add(mat);
 }
 for (let k = 0; k <= PER_SIDE; k++) {
@@ -799,7 +806,7 @@ for (let k = 0; k <= PER_SIDE; k++) {
 // the screen shows the site's slides; they turn by themselves until you sit down to watch
 function slide(c, k) {
   c.si = (k + c.nSlides) % c.nSlides;
-  if (!c.tex[c.si]) c.tex[c.si] = posterLoad(`images/slides/${c.key}-${c.si + 1}.jpg`);
+  if (!c.tex[c.si]) c.tex[c.si] = posterLoad(`images/slides/${c.key}-${c.si + 1}.webp`);
   c.fadeM.map = c.tex[c.si]; c.fadeM.needsUpdate = true; c.fadeM.opacity = 0; c.fading = true;    // fade the new slide in over the old
 }
 function fadeSlides(dt) {
@@ -1084,7 +1091,7 @@ function startWatching(c) {
   const p = c.p;
   tv.innerHTML = c.live
     ? `<iframe src="${c.url}" title="${p.name}" loading="eager" allow="fullscreen; autoplay" referrerpolicy="no-referrer"></iframe>`
-    : `<img alt="${p.name}, slide ${c.si + 1}" src="images/slides/${c.key}-${c.si + 1}.jpg"><button class="prev" aria-label="Previous slide">‹</button><button class="next" aria-label="Next slide">›</button><span class="count"></span>`;
+    : `<img alt="${p.name}, slide ${c.si + 1}" src="images/slides/${c.key}-${c.si + 1}.webp"><button class="prev" aria-label="Previous slide">‹</button><button class="next" aria-label="Next slide">›</button><span class="count"></span>`;
   tvBar.innerHTML = `<button class="back" type="button">✕ Stand up</button><span>${p.name}${c.live ? " · live, use it right on the screen" : " · slides: ‹ › or the arrow keys"}</span>` +
     (p.live ? `<a href="${p.live}" target="_blank" rel="noopener">Open in a new tab ↗</a>` : "");
   tvBar.querySelector(".back").addEventListener("click", stopWatching);
@@ -1092,7 +1099,7 @@ function startWatching(c) {
 }
 function tvSlide(d) {
   const c = watching; if (!c || c.live) return;
-  slide(c, c.si + d); tv.querySelector("img").src = `images/slides/${c.key}-${c.si + 1}.jpg`;
+  slide(c, c.si + d); tv.querySelector("img").src = `images/slides/${c.key}-${c.si + 1}.webp`;
   tv.querySelector(".count").textContent = `${c.si + 1} / ${c.nSlides}`;
 }
 function stopWatching() {
@@ -1130,11 +1137,11 @@ function placeTV() {
   scene.traverse((o) => { if (!o.isMesh) return; let mine = false; for (let a = o; a; a = a.parent) if (a === hero) mine = true; o.castShadow = mine && !o.userData.ink; if (mine) o.receiveShadow = false; });
 }
 // keep it smooth: lower the render resolution a little when frames run slow, raise it when there's headroom
-const PR_MAX = Math.min(devicePixelRatio, 2); let pr = Math.min(PR_MAX, 1.5), slow = 0, fast = 0;
+const PR_MAX = Math.min(devicePixelRatio, 2); let pr = PR_MAX, slow = 0, fast = 0;
 renderer.setPixelRatio(pr);
 function adapt(dt) {
   if (dt > 1 / 45) { slow += dt; fast = 0; } else if (dt < 1 / 58) { fast += dt; slow = 0; }
-  if (slow > .8 && pr > .75) { pr = Math.max(.75, pr - .25); renderer.setPixelRatio(pr); resize(); slow = 0; }
+  if (slow > 1.5 && pr > 1) { pr = Math.max(1, pr - .25); renderer.setPixelRatio(pr); resize(); slow = 0; }
   else if (fast > 4 && pr < PR_MAX) { pr = Math.min(PR_MAX, pr + .25); renderer.setPixelRatio(pr); resize(); fast = 0; }
 }
 
