@@ -240,6 +240,41 @@
   .vision .dom, .vision .lock { font-size: 13px; }
   .vision a { font-size: 15px; }
   .room .tip small { font-family: var(--sans); font-size: 12px; }
+
+  /* the whole page is the game */
+  html, body { height: 100%; overflow: hidden; }
+  .room-wrap { position: fixed; inset: 0; max-width: none; padding: 0; margin: 0; }
+  .room { height: 100% !important; min-height: 0 !important; border-radius: 0 !important; box-shadow: none !important; touch-action: none; }
+  .glow { display: none; }
+  .room .title {
+    position: absolute; left: 14px; top: 14px; z-index: 2; pointer-events: none; padding: 6px 12px 4px; border-radius: 6px;
+    background: #fffdf7; color: #1f1d22; border: 2.5px solid #1f1d22; box-shadow: 3px 3px 0 #1f1d22; font-size: 17px; letter-spacing: .04em; text-transform: uppercase;
+  }
+  .room .hint { top: auto; bottom: 18px; }
+  .room.inroom .hint, .room.open .hint { opacity: 0; }
+  .vision.roomcard { right: 22px; left: auto; bottom: 22px; }
+  .room.inroom .roomcard { opacity: 1; translate: 0 0; pointer-events: auto; transition-delay: .1s; }
+  .room.open .roomcard { opacity: 0 !important; pointer-events: none !important; }
+  @media (max-width: 700px) {
+    .room .title { font-size: 13px; top: 10px; left: 10px; }
+    .vision.roomcard { left: 12px; right: 12px; bottom: auto; top: 56px; width: auto; }
+  }
+
+  /* the live site on the TV */
+  .tv { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; opacity: 0; transition: opacity .4s; z-index: 3; background: #fff; display: none; }
+  .room.watching .tv { display: block; }
+  .tv iframe, .tv img { width: 100%; height: 100%; border: 0; display: block; background: #fff; object-fit: contain; }
+  .tv button { position: absolute; top: 50%; translate: 0 -50%; width: 84px; height: 84px; border-radius: 50%; border: 5px solid #1f1d22; background: #fffdf7; font: 64px/1 var(--sans); cursor: pointer; box-shadow: 6px 6px 0 #1f1d22; }
+  .tv .prev { left: 24px; } .tv .next { right: 24px; }
+  .tv .count { position: absolute; right: 24px; bottom: 20px; padding: 6px 16px; border-radius: 10px; border: 4px solid #1f1d22; background: #fffdf7; font: 34px var(--sans); }
+  .tvbar { position: absolute; left: 50%; top: 14px; translate: -50% 0; z-index: 4; display: none; align-items: center; gap: 12px; padding: 7px 10px; max-width: calc(100% - 140px);
+    background: #fffdf7; border: 2.5px solid #1f1d22; border-radius: 8px; box-shadow: 3px 3px 0 #1f1d22; font: 16px var(--sans); color: #1f1d22; }
+  .room.watching .tvbar { display: flex; }
+  .tvbar button, .tvbar a { padding: 5px 12px; border-radius: 999px; border: 2px solid #1f1d22; background: var(--dc); color: #fff; font: 15px var(--sans); cursor: pointer; text-decoration: none; white-space: nowrap; }
+  .tvbar a { background: #fff; color: #1f1d22; }
+  .tvbar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .room.watching .roomcard, .room.watching .title, .room.watching .hint, .room.watching .stick { opacity: 0 !important; pointer-events: none !important; }
+  @media (max-width: 700px) { .tvbar { top: 8px; max-width: calc(100% - 70px); } .tvbar span { display: none; } }
 </style>
 </head>
 <body>
@@ -249,31 +284,16 @@
   <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
 </button>
 
-<header>
-  <div class="eyebrow"><b></b>qwertykeypadapple · Selected work<b></b></div>
-  <h1>Things I've <span class="b">built</span><span class="r">.</span></h1>
-  <p class="lede">Walk around the study. Every project is a book on the shelf: pick one and its website rises out of the pages.</p>
-</header>
 
 <main class="room-wrap">
   <div class="room" id="room" role="region" aria-label="A 3D study with a bookshelf; each coloured book is a project">
+    <div class="title">qwertykeypadapple · things I've built</div>
     <div class="hint">Tap a coloured book to open it</div>
     <div class="tip"></div>
     <div class="vision" role="dialog" aria-label="Project preview"><button class="x" type="button" aria-label="Close">×</button></div>
   </div>
-  <nav class="shelf-index" aria-label="All projects">
-  <div class="grp" style="--dc:#1d6b50"><span>Fintech</span><button type="button" data-name="Investor Connect">Investor Connect</button><button type="button" data-name="FedAML Pitch">FedAML Pitch</button><button type="button" data-name="FedAML Results">FedAML Results</button></div>
-  <div class="grp" style="--dc:#6b3d97"><span>Federated learning</span><button type="button" data-name="FedPBC Demo">FedPBC Demo</button><button type="button" data-name="Federation Quest">Federation Quest</button><button type="button" data-name="FedMSE Arcade">FedMSE Arcade</button><button type="button" data-name="FLPro">FLPro</button></div>
-  <div class="grp" style="--dc:#2b4597"><span>Algorithms</span><button type="button" data-name="Neural Debris">Neural Debris</button></div>
-  <div class="grp" style="--dc:#b0592c"><span>Automotive & batteries</span><button type="button" data-name="Battery Analytics">Battery Analytics</button><button type="button" data-name="Battery Pitch">Battery Pitch</button></div>
-  <div class="grp" style="--dc:#17707c"><span>Health & law</span><button type="button" data-name="DocLaw">DocLaw</button></div>
-  <div class="grp" style="--dc:#a3263d"><span>Social & games</span><button type="button" data-name="Nukkad AI">Nukkad AI</button><button type="button" data-name="PokéWords">PokéWords</button></div>
-  <div class="grp" style="--dc:#94701c"><span>Hardware & learning</span><button type="button" data-name="Logic Bench">Logic Bench</button></div>
-  <div class="grp" style="--dc:#4f5a68"><span>Industrial</span><button type="button" data-name="Bearing Collective">Bearing Collective</button><button type="button" data-name="Ask the Vibration">Ask the Vibration</button></div>
-  </nav>
 </main>
 
-<footer>All code lives on <a href="https://github.com/qwertykeypadapple">github.com/qwertykeypadapple</a></footer>
 
 <script>
 const GH = "https://github.com/qwertykeypadapple/";
@@ -429,19 +449,11 @@ const wallMat = M({ color: "#f3d3c4" });
 const back = new THREE.Mesh(new THREE.PlaneGeometry(16, 7), wallMat); back.position.set(0, 3.5, -4.6); back.receiveShadow = true; scene.add(back);
 const left = new THREE.Mesh(new THREE.PlaneGeometry(12, 7), wallMat); left.rotation.y = Math.PI / 2; left.position.set(-7.2, 3.5, 1.4); left.receiveShadow = true; scene.add(left);
 const right = new THREE.Mesh(new THREE.PlaneGeometry(12, 7), wallMat); right.rotation.y = -Math.PI / 2; right.position.set(7.2, 3.5, 1.4); right.receiveShadow = true; scene.add(right);
-const front = new THREE.Mesh(new THREE.PlaneGeometry(16, 7), wallMat); front.rotation.y = Math.PI; front.position.set(0, 3.5, 6.4); front.receiveShadow = true; scene.add(front);
 const ceil = new THREE.Mesh(new THREE.PlaneGeometry(16, 12), M({ color: "#f4ece0", roughness: 1 })); ceil.rotation.x = Math.PI / 2; ceil.position.set(0, 7, .9); scene.add(ceil);
 const wainMat = M({ color: "#8fd3bd" });
 box(16, 1.1, .06, wainMat, 0, .55, -4.56, scene); box(.06, 1.1, 12, wainMat, -7.16, .55, 1.4, scene);
 box(16, .08, .1, M({ color: "#5b8f80" }), 0, 1.12, -4.53, scene);
-box(.06, 1.1, 12, wainMat, 7.16, .55, 1.4, scene); box(16, 1.1, .06, wainMat, 0, .55, 6.36, scene);
-// a panelled door on the wall behind you
-{ const door = new THREE.Group(); door.position.set(3.2, 0, 6.34); scene.add(door);
-  const dm = M({ map: wood("#5a3720", 3), roughness: .5 });
-  box(1.9, 4.1, .1, dm, 0, 2.05, 0, door); box(2.2, .2, .14, M({ color: "#f7f1e6" }), 0, 4.2, .02, door);
-  box(.14, 4.2, .14, M({ color: "#f7f1e6" }), -1.03, 2.1, .02, door); box(.14, 4.2, .14, M({ color: "#f7f1e6" }), 1.03, 2.1, .02, door);
-  [[0, 2.95], [0, 1.15]].forEach(([x, y]) => box(1.4, 1.3, .04, M({ map: wood("#4a2c19", 3), roughness: .55 }), x, y, -.06, door));
-  const knob = new THREE.Mesh(new THREE.SphereGeometry(.08, 16, 12), M({ color: "#c9a24f", metalness: .8, roughness: .3 })); knob.position.set(-.7, 2, -.1); door.add(knob); }
+box(.06, 1.1, 12, wainMat, 7.16, .55, 1.4, scene);
 // a pendant light in the middle of the ceiling
 { const pend = new THREE.Group(); pend.position.set(-.4, 7, 1); scene.add(pend);
   const cord = new THREE.Mesh(new THREE.CylinderGeometry(.015, .015, 1.6, 6), M({ color: "#222" })); cord.position.y = -.8; pend.add(cord);
@@ -646,6 +658,122 @@ function fitPreview(t) {                               // show a 16:10 window of
   t.repeat.set(1, Math.min(1, ratio)); t.userData.scroll = ratio < 1; t.offset.set(0, 1 - t.repeat.y);
 }
 
+// ---------------- the hall: a cinema room for every project, the study at the far end ----------------
+const SOLIDS = [];                     // collision rectangles [x0, x1, z0, z1]
+const WALLS = [back, left, right];     // surfaces the camera must stay in front of
+const HALL = { x0: -.8, x1: 7.2, z0: 6.4, z1: 66.4, h: 6 }, ROOM = { d: 9, w: 7, h: 5.4 }, T = .25;
+const hallWall = M({ color: "#f3d3c4" }), roomWall = M({ color: "#2e3456" }), trim = M({ color: "#8fd3bd" });
+function solid(x0, x1, z0, z1, h, mat, y0 = 0, block = true) {
+  const m = box(x1 - x0, h, z1 - z0, mat, (x0 + x1) / 2, y0 + h / 2, (z0 + z1) / 2, scene);
+  m.castShadow = false; if (block) SOLIDS.push([x0, x1, z0, z1]); WALLS.push(m); return m;
+}
+// a wall running along z at x (x0..x1 thick) with door gaps [[z0, z1], ...]
+function wallZ(x0, x1, z0, z1, gaps, h, mat, doorH = 4) {
+  let z = z0;
+  for (const [g0, g1] of gaps) { if (g0 > z) solid(x0, x1, z, g0, h, mat); solid(x0, x1, g0, g1, h - doorH, mat, doorH, false); z = g1; }
+  if (z < z1) solid(x0, x1, z, z1, h, mat);
+}
+function wallX(z0, z1, x0, x1, gaps, h, mat, doorH = 4) {
+  let x = x0;
+  for (const [g0, g1] of gaps) { if (g0 > x) solid(x, g0, z0, z1, h, mat); solid(g0, g1, z0, z1, h - doorH, mat, doorH, false); x = g1; }
+  if (x < x1) solid(x, x1, z0, z1, h, mat);
+}
+// the study's front wall, with an open doorway in the middle of the hall's end
+wallX(6.4, 6.64, -7.2, 7.2, [[2.1, 4.3]], 7, wallMat, 4.3);
+SOLIDS.push([-7.7, -7.1, -5, 6.7], [7.1, 7.7, -5, 6.4], [-7.2, 7.2, -5.2, -3.45]);   // study walls and the bookshelf
+
+// floors and ceilings
+const tileTex = tex(256, 256, (g, w, h) => { g.fillStyle = "#f4efe3"; g.fillRect(0, 0, w, h); g.fillStyle = "#cfe8dd"; g.fillRect(0, 0, w / 2, h / 2); g.fillRect(w / 2, h / 2, w / 2, h / 2); g.fillStyle = "rgba(31,29,34,.35)"; g.fillRect(0, 0, w, 2); g.fillRect(0, 0, 2, h); g.fillRect(0, h / 2, w, 2); g.fillRect(w / 2, 0, 2, h); }, [4, 30]);
+const hallFloor = new THREE.Mesh(new THREE.PlaneGeometry(HALL.x1 - HALL.x0, HALL.z1 - HALL.z0), M({ map: tileTex })); hallFloor.rotation.x = -Math.PI / 2; hallFloor.position.set((HALL.x0 + HALL.x1) / 2, .005, (HALL.z0 + HALL.z1) / 2); hallFloor.receiveShadow = true; scene.add(hallFloor);
+const runner = new THREE.Mesh(new THREE.PlaneGeometry(2.6, HALL.z1 - HALL.z0 - 1), M({ color: "#e9877a" })); runner.rotation.x = -Math.PI / 2; runner.position.set(3.2, .012, (HALL.z0 + HALL.z1) / 2); runner.receiveShadow = true; scene.add(runner);
+const ceilM = M({ color: "#f4ece0", side: THREE.DoubleSide });
+const hallCeil = new THREE.Mesh(new THREE.PlaneGeometry(HALL.x1 - HALL.x0 + .6, HALL.z1 - HALL.z0), ceilM); hallCeil.rotation.x = Math.PI / 2; hallCeil.position.set(3.2, HALL.h, (HALL.z0 + HALL.z1) / 2); scene.add(hallCeil);
+// the far end of the hall, with the welcome sign
+solid(HALL.x0 - T, HALL.x1 + T, HALL.z1, HALL.z1 + T, HALL.h, hallWall);
+{ const sign = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 2.2), new THREE.MeshBasicMaterial({ toneMapped: false, map: tex(1024, 352, (g, w, h) => {
+    g.fillStyle = "#fffdf7"; g.fillRect(0, 0, w, h); g.strokeStyle = "#1f1d22"; g.lineWidth = 14; g.strokeRect(7, 7, w - 14, h - 14);
+    g.fillStyle = "#1f1d22"; g.textAlign = "center"; g.font = "112px 'Patrick Hand', cursive"; g.fillText("THINGS I'VE BUILT.", w / 2, 170);
+    g.fillStyle = "#3fa58d"; g.font = "48px 'Patrick Hand', cursive"; g.fillText("WALK IN. EVERY DOOR IS A PROJECT. THE LIBRARY IS AT THE END.", w / 2, 262); }) }));
+  sign.rotation.y = Math.PI; sign.position.set(3.2, 3.4, HALL.z1 - .02); scene.add(sign); }
+
+// which project goes behind which door: grouped by field, nearest the entrance first
+const ORDER2 = ["fintech", "fl", "algo", "auto", "health", "social", "edu", "industry"];
+const SLIDES = await fetch("images/slides/index.json").then((r) => r.json()).catch(() => ({}));
+const EMBED_BLOCKED = new Set(["thinking-outside-the-box"]);      // sends X-Frame-Options: DENY
+const EMBED = { "neural-debris-solution": "https://qwertykeypadapple.github.io/neural-debris-solution/attempt-map.html" };
+const VID = { "FedAML Pitch": "fedaml-pitch", "FedAML Results": "fedaml-results", "Battery Pitch": "battery-pitch-deck" };
+const cinemaList = projects.slice().sort((a, b) => ORDER2.indexOf(a.dom) - ORDER2.indexOf(b.dom));
+const PER_SIDE = Math.ceil(cinemaList.length / 2), PITCH = ROOM.w + T;
+const roomZ0 = (i) => HALL.z1 - T - (i + 1) * PITCH + T;     // rooms are counted from the entrance end
+const cinemas = [];
+const marquee = (p, D) => tex(1024, 300, (g, w, h) => {
+  g.fillStyle = "#1f1d22"; g.fillRect(0, 0, w, h);
+  g.fillStyle = D.c; g.fillRect(16, 16, w - 32, h - 32);
+  g.fillStyle = "#fffdf7"; g.fillRect(30, 30, w - 60, h - 60);
+  for (let x = 46; x < w - 30; x += 38) { g.fillStyle = "#f2c14e"; g.beginPath(); g.arc(x, 23, 7, 0, 7); g.arc(x, h - 23, 7, 0, 7); g.fill(); }
+  g.fillStyle = D.c; g.textAlign = "center"; g.font = "42px 'Patrick Hand', cursive"; g.fillText(p.deck ? "NOW SHOWING · PITCH DECK" : "NOW SHOWING", w / 2, 92);
+  g.fillStyle = "#1f1d22"; let size = 118; g.font = `${size}px 'Patrick Hand', cursive`; while (g.measureText(p.name.toUpperCase()).width > w - 120) { size -= 6; g.font = `${size}px 'Patrick Hand', cursive`; }
+  g.fillText(p.name.toUpperCase(), w / 2, 210);
+});
+const posterLoad = (src) => { const t = loader.load(src); t.colorSpace = THREE.SRGBColorSpace; return t; };
+const carpet = M({ color: "#4a2f45" }), frameInk = M({ color: "#1f1d22" });
+cinemaList.forEach((p, i) => {
+  const D = DOMAINS[p.dom], side = i < PER_SIDE ? -1 : 1, k = i % PER_SIDE;
+  const z0 = roomZ0(k), z1 = z0 + ROOM.w, zc = (z0 + z1) / 2;
+  const xIn = side < 0 ? HALL.x0 - T : HALL.x1 + T, xFar = xIn + side * ROOM.d;          // doorway side and screen side
+  const xa = Math.min(xIn, xFar), xb = Math.max(xIn, xFar);
+  // floor, ceiling, far wall and the walls either side
+  const fl = new THREE.Mesh(new THREE.PlaneGeometry(ROOM.d, ROOM.w), carpet); fl.rotation.x = -Math.PI / 2; fl.position.set((xa + xb) / 2, .005, zc); fl.receiveShadow = true; scene.add(fl);
+  const ce = new THREE.Mesh(new THREE.PlaneGeometry(ROOM.d + .5, ROOM.w + .5), M({ color: "#20253f", side: THREE.DoubleSide })); ce.rotation.x = Math.PI / 2; ce.position.set((xa + xb) / 2, ROOM.h, zc); scene.add(ce);
+  solid(side < 0 ? xFar - T : xFar, side < 0 ? xFar : xFar + T, z0 - T, z1 + T, ROOM.h, roomWall);
+  solid(xa, xb, z0 - T, z0, ROOM.h, roomWall); solid(xa, xb, z1, z1 + T, ROOM.h, roomWall);
+  // the screen: a poster frame until you come near, then the site's video
+  const sw = 5.6, sh = 3.15, sx = xFar - side * .08;
+  const key = VID[p.name] || p.repo, nSlides = SLIDES[key] || 1;
+  const poster = posterLoad(`images/slides/${key}-1.jpg`);
+  const screenM = new THREE.MeshBasicMaterial({ map: poster, toneMapped: false });
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), screenM); scr.userData.cinema = cinemas.length; scr.position.set(sx, 2.75, zc); scr.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2; scene.add(scr);
+  box(.1, sh + .3, sw + .3, frameInk, sx + side * -.0 + side * .06, 2.75, zc, scene);
+  box(1.2, .5, ROOM.w - .6, M({ color: "#3a2a3f" }), xFar - side * .6, .25, zc, scene);       // a little stage under the screen
+  SOLIDS.push([Math.min(xFar, xFar - side * 1.2), Math.max(xFar, xFar - side * 1.2), z0, z1]);
+  // posters from the site along the side walls
+  [[0, 1], [1, 2], [2, 3]].forEach(([n, f]) => {
+    const onNear = n < 2, pz = onNear ? z0 + .02 : z1 - .02, px = xFar - side * (n === 1 ? 6.4 : 3.6);
+    const g = new THREE.Group(); g.position.set(px, 2.7, pz); g.rotation.y = onNear ? 0 : Math.PI; scene.add(g);
+    box(2.36, 1.56, .06, frameInk, 0, 0, .03, g);
+    const ph = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 1.4), new THREE.MeshBasicMaterial({ map: posterLoad(`images/slides/${key}-${Math.min(nSlides, f + 1)}.jpg`), toneMapped: false })); ph.position.z = .07; g.add(ph);
+  });
+  // the doorway in the hall wall, with a marquee sign over it and an exit sign inside
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 1.0), new THREE.MeshBasicMaterial({ map: marquee(p, D), toneMapped: false }));
+  sign.position.set(side < 0 ? HALL.x0 + .02 : HALL.x1 - .02, 4.85, zc); sign.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2; scene.add(sign);
+  const exitS = new THREE.Mesh(new THREE.PlaneGeometry(.9, .32), new THREE.MeshBasicMaterial({ toneMapped: false, map: tex(256, 92, (g) => { g.fillStyle = "#2f9e6a"; g.fillRect(0, 0, 256, 92); g.fillStyle = "#fff"; g.font = "64px 'Patrick Hand', cursive"; g.textAlign = "center"; g.fillText("EXIT", 128, 70); }) }));
+  exitS.position.set(xIn + side * .02, 4.4, zc); exitS.rotation.y = side < 0 ? -Math.PI / 2 : Math.PI / 2; scene.add(exitS);
+  const url = EMBED[p.repo] || p.live || null;
+  cinemas.push({ p, D, side, xa, xb, z0, z1, zc, screenM, poster, key, nSlides, si: 0, tex: [poster], url, live: !!url && !EMBED_BLOCKED.has(p.repo), scr, sw, sh, normal: new V3(-side, 0, 0), door: new V3(side < 0 ? HALL.x0 : HALL.x1, 0, zc) });
+});
+// the hall's long walls, with a doorway for every room
+const gapsFor = (sd) => cinemas.filter((c) => c.side === sd).map((c) => [c.zc - 1.15, c.zc + 1.15]).sort((a, b) => a[0] - b[0]);
+wallZ(HALL.x0 - T, HALL.x0, HALL.z0, HALL.z1, gapsFor(-1), HALL.h, hallWall);
+wallZ(HALL.x1, HALL.x1 + T, HALL.z0, HALL.z1, gapsFor(1), HALL.h, hallWall);
+// a mint dado along the hall, plants between the doors
+[HALL.x0 + .03, HALL.x1 - .03].forEach((x) => box(.06, 1.1, HALL.z1 - HALL.z0, trim, x, .55, (HALL.z0 + HALL.z1) / 2, scene));
+for (let k = 0; k <= PER_SIDE; k++) {
+  const z = roomZ0(k) + ROOM.w + T / 2 - (k === 0 ? 0 : 0);
+  if (z > HALL.z1 - .5 || z < HALL.z0 + .5) continue;
+  [HALL.x0 + .55, HALL.x1 - .55].forEach((x) => {
+    const pot = new THREE.Group(); pot.position.set(x, 0, z); scene.add(pot);
+    const pm = new THREE.Mesh(new THREE.CylinderGeometry(.32, .24, .6, 20), M({ color: "#e9877a" })); pm.position.y = .3; pm.castShadow = true; pot.add(pm);
+    for (let j = 0; j < 5; j++) { const l = new THREE.Mesh(new THREE.ConeGeometry(.16, .9, 8), M({ color: j % 2 ? "#2f7a4c" : "#3c8f5a" })); l.position.set(Math.cos(j * 1.26) * .12, 1.0, Math.sin(j * 1.26) * .12); l.rotation.set(Math.sin(j * 1.26) * .45, 0, -Math.cos(j * 1.26) * .45); l.castShadow = true; pot.add(l); }
+    SOLIDS.push([x - .35, x + .35, z - .35, z + .35]);
+  });
+}
+// the screen shows the site's slides; they turn by themselves until you sit down to watch
+function slide(c, k) {
+  c.si = (k + c.nSlides) % c.nSlides;
+  if (!c.tex[c.si]) c.tex[c.si] = posterLoad(`images/slides/${c.key}-${c.si + 1}.jpg`);
+  c.screenM.map = c.tex[c.si]; c.screenM.needsUpdate = true;
+}
+
 // ---------------- you: a small character the camera follows ----------------
 const hero = new THREE.Group(); scene.add(hero);
 const heroParts = {};
@@ -735,14 +863,12 @@ function ink(root, thick = .03) {
 const camera = new THREE.PerspectiveCamera(72, 1, .05, 60);
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
 let W = 1, H = 1, hover = null, active = null;
-const me = { x: .3, z: 2.4, yaw: .12, pitch: .34, face: Math.PI, vx: 0, vz: 0, bob: 0, goal: null };     // yaw/pitch: the camera orbiting behind you
-const R = .45, CAM_D = 4.8;
-const BOUNDS = { x0: -6.6, x1: 6.6, z0: -2.95, z1: 5.9 };
-const BLOCKS = [[3.0, 6.2, -2.6, -.6], [4.25, 5.45, -.95, .05]];       // the desk and its chair                                   // the desk: x0, x1, z0, z1
+const me = { x: 3.2, z: HALL.z1 - 3.2, yaw: 0, pitch: .3, face: Math.PI, vx: 0, vz: 0, bob: 0, goal: null };     // yaw/pitch: the camera orbiting behind you
+const R = .45, CAM_D = 4.8, camRay = new THREE.Raycaster(), camLook = new V3();
+const BLOCKS = [[3.0, 6.2, -2.6, -.6], [4.25, 5.45, -.95, .05], ...SOLIDS];       // the desk, its chair, and every wall                                   // the desk: x0, x1, z0, z1
 const vasePos = new THREE.Vector2(-6.05, -3.55);
 function collide(nx, nz) {
-  nx = Math.min(BOUNDS.x1, Math.max(BOUNDS.x0, nx)); nz = Math.min(BOUNDS.z1, Math.max(BOUNDS.z0, nz));
-  for (const [x0, x1, z0, z1] of BLOCKS) {
+  for (let pass = 0; pass < 2; pass++) for (const [x0, x1, z0, z1] of BLOCKS) {
     if (nx > x0 - R && nx < x1 + R && nz > z0 - R && nz < z1 + R) {          // push out along the shallowest side
       const d = [nx - (x0 - R), (x1 + R) - nx, nz - (z0 - R), (z1 + R) - nz], m = Math.min(...d);
       if (m === d[0]) nx = x0 - R; else if (m === d[1]) nx = x1 + R; else if (m === d[2]) nz = z0 - R; else nz = z1 + R;
@@ -757,7 +883,7 @@ function resize() {
 }
 new ResizeObserver(resize).observe(room); resize();
 const touchy = matchMedia("(hover: none)").matches;
-room.querySelector(".hint").textContent = touchy ? "Joystick to walk, tap a book!" : "WASD to walk, drag to look around, click a book!";
+room.querySelector(".hint").textContent = touchy ? "Joystick to walk. Every door is a project!" : "WASD to walk, drag to look. Every door is a project!";
 
 const floorHit = (e) => { setRay(e); const h = ray.intersectObject(floor)[0]; return h ? h.point : null; };
 function setRay(e) { const r = room.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, camera); }
@@ -770,19 +896,19 @@ function pick(e) {
 const keys = new Set();
 room.tabIndex = 0;
 const KEYMAP = { KeyW: "f", ArrowUp: "f", KeyS: "b", ArrowDown: "b", KeyA: "l", ArrowLeft: "l", KeyD: "r", ArrowRight: "r", KeyQ: "tl", KeyE: "tr", ShiftLeft: "run", ShiftRight: "run" };
-room.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") { if (active) close(); else room.blur(); return; }
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") { if (active) close(); return; }
   const k = KEYMAP[e.code]; if (!k) return;
   e.preventDefault(); if (!active) { keys.add(k); me.goal = null; }
 });
-room.addEventListener("keyup", (e) => { const k = KEYMAP[e.code]; if (k) keys.delete(k); });
-room.addEventListener("blur", () => keys.clear());
+window.addEventListener("keyup", (e) => { const k = KEYMAP[e.code]; if (k) keys.delete(k); });
+window.addEventListener("blur", () => keys.clear());
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && active) close(); });
 
 // pointer: drag to look; a click (no drag) opens a book or walks to a spot on the floor
 let drag = null;
 room.addEventListener("pointerdown", (e) => {
-  if (e.target.closest(".vision, .stick")) return;
+  if (e.target.closest(".vision, .stick, .tv, .tvbar")) return;
   drag = { x: e.clientX, y: e.clientY, yaw: me.yaw, pitch: me.pitch, moved: false, type: e.pointerType };
   if (e.pointerType === "mouse") { room.focus({ preventScroll: true }); room.setPointerCapture(e.pointerId); }
 });
@@ -805,8 +931,11 @@ room.addEventListener("pointermove", (e) => {
 });
 const endDrag = (e) => {
   const d = drag; drag = null; room.classList.remove("looking");
-  if (!d || d.moved || (e.target.closest && e.target.closest(".vision, .stick"))) return;
+  if (!d || d.moved || (e.target.closest && e.target.closest(".vision, .stick, .tv, .tvbar"))) return;
   if (active) { close(); return; }
+  if (watching) { stopWatching(); return; }
+  setRay(e); const sh = ray.intersectObjects(cinemas.map((c) => c.scr))[0];
+  if (sh && sh.distance < 14) { startWatching(cinemas[sh.object.userData.cinema]); return; }
   const b = pick(e); if (b) { open(b); return; }
   const pt = floorHit(e); if (pt) me.goal = new THREE.Vector2(pt.x, pt.z);       // walk to where you clicked
 };
@@ -868,6 +997,59 @@ paintTheme();
 new MutationObserver(paintTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
 ink(hero, .022); ink(scene);
+scene.updateMatrixWorld(true);            // walls must be in place before the camera checks them on the first frame
+window.__dbg = { me };      // lets automated checks move you around
+
+// the card for the cinema you're standing in
+let shown = null;
+const roomCard = document.createElement("div"); roomCard.className = "vision roomcard"; room.appendChild(roomCard);
+function showRoom(c) {
+  shown = c; room.classList.toggle("inroom", !!c);
+  if (!c) return;
+  const p = c.p; room.style.setProperty("--dc", c.D.c);
+  roomCard.innerHTML = `<div class="dom"><i></i>${p.deck ? "Pitch deck · " : ""}${DOMAINS[p.dom].label}</div><h3>${p.name}</h3><p class="q">${p.q}</p><div class="links"><a href="#" class="watch">▶ Watch on the screen</a>${linksFor(p).replace(/<a href/, '<a class="ghost" href')}</div>`;
+  roomCard.querySelector(".watch").addEventListener("click", (e) => { e.preventDefault(); startWatching(c); });
+}
+
+// ---------------- watching a screen: the real site, live, right on the TV ----------------
+let watching = null, watchT = 0;
+const tv = document.createElement("div"); tv.className = "tv"; room.appendChild(tv);
+const tvBar = document.createElement("div"); tvBar.className = "tvbar"; room.appendChild(tvBar);
+function startWatching(c) {
+  watching = c; watchT = performance.now(); me.goal = null; keys.clear(); room.classList.add("watching");
+  const p = c.p;
+  tv.innerHTML = c.live
+    ? `<iframe src="${c.url}" title="${p.name}" loading="eager" allow="fullscreen; autoplay" referrerpolicy="no-referrer"></iframe>`
+    : `<img alt="${p.name}, slide ${c.si + 1}" src="images/slides/${c.key}-${c.si + 1}.jpg"><button class="prev" aria-label="Previous slide">‹</button><button class="next" aria-label="Next slide">›</button><span class="count"></span>`;
+  tvBar.innerHTML = `<button class="back" type="button">✕ Back to the room</button><span>${p.name}${c.live ? " · live, use it right on the screen" : " · slides: ‹ › or the arrow keys"}</span>` +
+    (p.live ? `<a href="${p.live}" target="_blank" rel="noopener">Open in a new tab ↗</a>` : "");
+  tvBar.querySelector(".back").addEventListener("click", stopWatching);
+  if (!c.live) { tv.querySelector(".prev").addEventListener("click", () => tvSlide(-1)); tv.querySelector(".next").addEventListener("click", () => tvSlide(1)); tvSlide(0); }
+}
+function tvSlide(d) {
+  const c = watching; if (!c || c.live) return;
+  slide(c, c.si + d); tv.querySelector("img").src = `images/slides/${c.key}-${c.si + 1}.jpg`;
+  tv.querySelector(".count").textContent = `${c.si + 1} / ${c.nSlides}`;
+}
+function stopWatching() { watching = null; room.classList.remove("watching"); tv.innerHTML = ""; tv.style.opacity = 0; }
+window.addEventListener("keydown", (e) => {
+  if (!watching) return;
+  if (e.key === "Escape") { stopWatching(); return; }
+  if (!watching.live && (e.key === "ArrowRight" || e.key === " " || e.key === "]")) { e.preventDefault(); tvSlide(1); }
+  if (!watching.live && (e.key === "ArrowLeft" || e.key === "[")) { e.preventDefault(); tvSlide(-1); }
+});
+// fit the HTML layer over the screen's corners as seen by the camera
+const cornerV = new V3();
+function placeTV() {
+  const c = watching, r = room.getBoundingClientRect(); let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  for (const [u, v] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    cornerV.set(u * c.sw / 2, v * c.sh / 2, 0); c.scr.localToWorld(cornerV); cornerV.project(camera);
+    const x = (cornerV.x + 1) / 2 * r.width, y = (1 - cornerV.y) / 2 * r.height; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+  }
+  const s = (x1 - x0) / 1280;
+  tv.style.transform = `translate(${x0}px, ${y0}px) scale(${s}, ${(y1 - y0) / 720})`;
+  tv.style.opacity = performance.now() - watchT > 900 ? 1 : 0;
+}
 
 // ---------------- the loop ----------------
 let visible = true;
@@ -879,7 +1061,7 @@ function frameLoop() {
   if (!visible) return;
   // walking
   let ix = 0, iz = 0;
-  if (!active) {
+  if (!active && !watching) {
     if (keys.has("tl")) me.yaw += dt * 1.8; if (keys.has("tr")) me.yaw -= dt * 1.8;
     iz = (keys.has("f") ? 1 : 0) - (keys.has("b") ? 1 : 0) - joy.y; ix = (keys.has("r") ? 1 : 0) - (keys.has("l") ? 1 : 0) + joy.x;
   }
@@ -903,12 +1085,31 @@ function frameLoop() {
   // the camera orbits behind and above, with a wide lens
   const tgt = new V3(me.x, 1.7, me.z);
   const cp = new V3(me.x + Math.sin(me.yaw) * Math.cos(me.pitch) * CAM_D, 1.7 + Math.sin(me.pitch) * CAM_D, me.z + Math.cos(me.yaw) * Math.cos(me.pitch) * CAM_D);
-  cp.x = Math.max(-6.9, Math.min(6.9, cp.x)); cp.z = Math.max(-4.3, Math.min(6.1, cp.z)); cp.y = Math.min(6.6, cp.y);
-  if (!camera.userData.placed || camera.position.distanceTo(cp) > 6) { camera.position.copy(cp); camera.userData.placed = true; }
-  else camera.position.lerp(cp, 1 - Math.exp(-dt * 8));
-  camera.lookAt(tgt.x, tgt.y + .3, tgt.z);
+  { const dir = cp.clone().sub(tgt), len = dir.length(); dir.normalize(); camRay.set(tgt, dir); camRay.far = len;
+    const hit = camRay.intersectObjects(WALLS, false)[0]; if (hit) cp.copy(tgt).addScaledVector(dir, Math.max(.6, hit.distance - .35));
+    cp.y = Math.min(cp.y, (me.z > HALL.z0 && me.x > HALL.x0 && me.x < HALL.x1) ? HALL.h - .3 : (me.z > HALL.z0 ? ROOM.h - .3 : 6.6)); }
+  const look = new V3(tgt.x, tgt.y + .3, tgt.z);
+  if (watching) {                                                          // sit facing the screen
+    const c = watching, ctr = new V3(); c.scr.getWorldPosition(ctr);
+    const half = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    const dist = Math.min(8.4, Math.max((c.sh / 2) / half / .86, (c.sw / 2) / (half * camera.aspect) / .94));
+    cp.copy(ctr).addScaledVector(c.normal, dist); look.copy(ctr);
+  }
+  if (!camera.userData.placed || camera.position.distanceTo(cp) > 6 && !watching) { camera.position.copy(cp); camera.userData.placed = true; camLook.copy(look); }
+  else { const a = 1 - Math.exp(-dt * (watching ? 4 : 8)); camera.position.lerp(cp, a); camLook.lerp(look, a); }
+  camera.lookAt(camLook);
+  if (watching) placeTV();
   const cb = { pos: camera.position.clone(), look: camera.position.clone().add(camera.getWorldDirection(new V3())) };
   earth.rotation.y += dt * .2;
+  // the sun follows you so shadows stay crisp everywhere
+  sun.position.set(me.x - 9, 9, me.z + 4); sun.target.position.set(me.x, 0, me.z);
+  let inside = null;
+  for (const c of cinemas) {
+    const d = Math.hypot(me.x - (c.xa + c.xb) / 2, me.z - c.zc);
+    if (d < 11 && c !== watching && !still) { c.tick = (c.tick || 0) + dt; if (c.tick > 4.5) { c.tick = 0; slide(c, c.si + 1); } }
+    if (me.x > c.xa && me.x < c.xb && me.z > c.z0 && me.z < c.z1) inside = c;
+  }
+  if (inside !== shown) showRoom(inside);
   // where an opened book is held: in front of the camera, a little low, tilted back
   const fwd = cb.look.clone().sub(cb.pos).normalize(), right = new V3().crossVectors(fwd, up).normalize(), camUp = new V3().crossVectors(right, fwd);
   const narrow = W / H < 1, DREAD = 3.3, hh = DREAD * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
