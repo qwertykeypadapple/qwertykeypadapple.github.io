@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>qwertykeypadapple · Projects</title>
+<title>Hall of Projects · qwertykeypadapple</title>
 <meta name="description" content="A 3D study where every project is a book on the shelf. Open one and its website rises out of the pages.">
 <script>try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}</script>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -290,7 +290,7 @@
 
 <main class="room-wrap">
   <div class="room" id="room" role="region" aria-label="A 3D study with a bookshelf; each coloured book is a project">
-    <div class="title">qwertykeypadapple · things I've built</div>
+    <div class="title">qwertykeypadapple · Hall of Projects</div>
     <div class="hint">Tap a coloured book to open it</div>
     <div class="tip"></div>
     <div class="vision" role="dialog" aria-label="Project preview"><button class="x" type="button" aria-label="Close">×</button></div>
@@ -517,7 +517,7 @@ const earth = new THREE.Mesh(new THREE.SphereGeometry(.3, 32, 24), M({ map: tex(
 earth.position.y = .62; earth.rotation.z = .4; earth.castShadow = true; globe.add(earth);
 // a framed note on the wall
 box(1.5, 1.0, .05, M({ color: "#2b2f3f" }), 4.6, 3.1, -4.55, scene);
-box(1.34, .84, .02, M({ map: ttex(3, 256, 160, (g) => { g.fillStyle = "#f6efe2"; g.fillRect(0, 0, 256, 160); g.fillStyle = "#1c2033"; g.font = "italic 400 34px 'Patrick Hand', cursive"; g.textAlign = "center"; g.fillText("Things I've", 128, 72); g.fillStyle = "#9a7636"; g.fillText("built.", 128, 116); }) }), 4.6, 3.1, -4.52, scene);
+box(1.34, .84, .02, M({ map: ttex(3, 256, 160, (g) => { g.fillStyle = "#f6efe2"; g.fillRect(0, 0, 256, 160); g.fillStyle = "#1c2033"; g.font = "italic 400 34px 'Patrick Hand', cursive"; g.textAlign = "center"; g.fillText("Hall of", 128, 72); g.fillStyle = "#9a7636"; g.fillText("Projects", 128, 116); }) }), 4.6, 3.1, -4.52, scene);
 
 // ---------------- books ----------------
 const loader = new THREE.TextureLoader();
@@ -699,7 +699,7 @@ const hallCeil = new THREE.Mesh(new THREE.PlaneGeometry(HALL.x1 - HALL.x0 + .6, 
 solid(HALL.x0 - T, HALL.x1 + T, HALL.z1, HALL.z1 + T, HALL.h, hallWall);
 { const sign = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 2.2), new THREE.MeshBasicMaterial({ toneMapped: false, map: ttex(2, 1024, 352, (g, w, h) => {
     g.fillStyle = "#fffdf7"; g.fillRect(0, 0, w, h); g.strokeStyle = "#1f1d22"; g.lineWidth = 14; g.strokeRect(7, 7, w - 14, h - 14);
-    g.fillStyle = "#1f1d22"; g.textAlign = "center"; g.font = "112px 'Patrick Hand', cursive"; g.fillText("THINGS I'VE BUILT.", w / 2, 170);
+    g.fillStyle = "#1f1d22"; g.textAlign = "center"; g.font = "112px 'Patrick Hand', cursive"; g.fillText("HALL OF PROJECTS", w / 2, 170);
     g.fillStyle = "#3fa58d"; let fs = 52; const line = "EVERY DOOR IS A PROJECT · THE LIBRARY IS AT THE END"; g.font = `${fs}px 'Patrick Hand', cursive`; while (g.measureText(line).width > w - 90) { fs -= 2; g.font = `${fs}px 'Patrick Hand', cursive`; } g.fillText(line, w / 2, 262); }) }));
   sign.rotation.y = Math.PI; sign.position.set(3.2, 3.4, HALL.z1 - .06); scene.add(sign); }
 
