@@ -668,7 +668,8 @@ const HALL = { x0: -.8, x1: 7.2, z0: 6.4, z1: 66.4, h: 6 }, ROOM = { d: 9, w: 7,
 const hallWall = M({ color: "#f3d3c4" }), roomWall = M({ color: "#2e3456" }), trim = M({ color: "#8fd3bd" });
 function solid(x0, x1, z0, z1, h, mat, y0 = 0, block = true) {
   const m = box(x1 - x0, h, z1 - z0, mat, (x0 + x1) / 2, y0 + h / 2, (z0 + z1) / 2, scene);
-  m.castShadow = false; if (block) SOLIDS.push([x0, x1, z0, z1]); WALLS.push(m); return m;
+  m.castShadow = false; m.userData.noInk = true;          // flat wall blocks: outlining them leaves black seams where blocks meet
+  if (block) SOLIDS.push([x0, x1, z0, z1]); WALLS.push(m); return m;
 }
 // a wall running along z at x (x0..x1 thick) with door gaps [[z0, z1], ...]
 function wallZ(x0, x1, z0, z1, gaps, h, mat, doorH = 4) {
@@ -697,7 +698,7 @@ solid(HALL.x0 - T, HALL.x1 + T, HALL.z1, HALL.z1 + T, HALL.h, hallWall);
     g.fillStyle = "#fffdf7"; g.fillRect(0, 0, w, h); g.strokeStyle = "#1f1d22"; g.lineWidth = 14; g.strokeRect(7, 7, w - 14, h - 14);
     g.fillStyle = "#1f1d22"; g.textAlign = "center"; g.font = "112px 'Patrick Hand', cursive"; g.fillText("THINGS I'VE BUILT.", w / 2, 170);
     g.fillStyle = "#3fa58d"; g.font = "48px 'Patrick Hand', cursive"; g.fillText("WALK IN. EVERY DOOR IS A PROJECT. THE LIBRARY IS AT THE END.", w / 2, 262); }) }));
-  sign.rotation.y = Math.PI; sign.position.set(3.2, 3.4, HALL.z1 - .02); scene.add(sign); }
+  sign.rotation.y = Math.PI; sign.position.set(3.2, 3.4, HALL.z1 - .06); scene.add(sign); }
 
 // which project goes behind which door: grouped by field, nearest the entrance first
 const ORDER2 = ["fintech", "fl", "algo", "auto", "health", "social", "edu", "industry"];
@@ -748,9 +749,9 @@ cinemaList.forEach((p, i) => {
   });
   // the doorway in the hall wall, with a marquee sign over it and an exit sign inside
   const sign = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 1.0), new THREE.MeshBasicMaterial({ map: marquee(p, D), toneMapped: false }));
-  sign.position.set(side < 0 ? HALL.x0 + .02 : HALL.x1 - .02, 4.85, zc); sign.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2; scene.add(sign);
+  sign.position.set(side < 0 ? HALL.x0 + .06 : HALL.x1 - .06, 4.85, zc); sign.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2; scene.add(sign);
   const exitS = new THREE.Mesh(new THREE.PlaneGeometry(.9, .32), new THREE.MeshBasicMaterial({ toneMapped: false, map: tex(256, 92, (g) => { g.fillStyle = "#2f9e6a"; g.fillRect(0, 0, 256, 92); g.fillStyle = "#fff"; g.font = "64px 'Patrick Hand', cursive"; g.textAlign = "center"; g.fillText("EXIT", 128, 70); }) }));
-  exitS.position.set(xIn + side * .02, 4.4, zc); exitS.rotation.y = side < 0 ? -Math.PI / 2 : Math.PI / 2; scene.add(exitS);
+  exitS.position.set(xIn + side * .06, 4.4, zc); exitS.rotation.y = side < 0 ? -Math.PI / 2 : Math.PI / 2; scene.add(exitS);
   const url = EMBED[p.repo] || p.live || null;
   cinemas.push({ p, D, side, xa, xb, z0, z1, zc, screenM, poster, key, nSlides, si: 0, tex: [poster], url, live: !!url && !EMBED_BLOCKED.has(p.repo), scr, sw, sh, normal: new V3(-side, 0, 0), door: new V3(side < 0 ? HALL.x0 : HALL.x1, 0, zc) });
 });
