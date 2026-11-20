@@ -1133,7 +1133,7 @@ function frameLoop() {
     if (keys.has("tl")) me.yaw += dt * 1.8; if (keys.has("tr")) me.yaw -= dt * 1.8;
     iz = (keys.has("f") ? 1 : 0) - (keys.has("b") ? 1 : 0) - joy.y; ix = (keys.has("r") ? 1 : 0) - (keys.has("l") ? 1 : 0) + joy.x;
   }
-  const speed = (keys.has("run") ? 5.6 : 3.4), sin = Math.sin(me.yaw), cos = Math.cos(me.yaw);
+  const speed = (keys.has("run") ? 9.5 : 6.2), sin = Math.sin(me.yaw), cos = Math.cos(me.yaw);
   let wx = (-sin * iz + cos * ix) * speed, wz = (-cos * iz - sin * ix) * speed;
   if (!active && me.goal && !ix && !iz) {                                   // walking to a clicked spot
     const tx = me.goal.x - me.x, tz = me.goal.y - me.z, dist = Math.hypot(tx, tz);
@@ -1141,7 +1141,7 @@ function frameLoop() {
   }
   const blend = 1 - Math.exp(-dt * 9); me.vx += (wx - me.vx) * blend; me.vz += (wz - me.vz) * blend;
   [me.x, me.z] = collide(me.x + me.vx * dt, me.z + me.vz * dt);
-  const pace = Math.hypot(me.vx, me.vz); me.bob += pace * dt * 2.2;
+  const pace = Math.hypot(me.vx, me.vz); me.bob += pace * dt * 1.7;
   // the character: face the way you walk, swing arms and legs
   if (pace > .2) { const want = Math.atan2(me.vx, me.vz); let d = ((want - me.face + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI; me.face += d * Math.min(1, dt * 10); }
   hero.position.set(me.x, 0, me.z); hero.rotation.y = me.face;
