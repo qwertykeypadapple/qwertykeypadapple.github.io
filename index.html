@@ -475,7 +475,7 @@ box(.12, .12, 2.6, frameMat, -7.1, 4.85, -.6, scene); box(.16, .16, 2.7, frameMa
 box(.12, 3.1, .1, frameMat, -7.1, 3.3, -1.85, scene); box(.12, 3.1, .1, frameMat, -7.1, 3.3, .65, scene);
 
 // a rug in front of the shelf
-box(6.4, .02, 3.6, M({ map: tex(512, 288, (g, w, h) => { g.fillStyle = "#e9877a"; g.fillRect(0, 0, w, h); g.strokeStyle = "#f7efe0"; g.lineWidth = 8; g.strokeRect(22, 22, w - 44, h - 44); g.lineWidth = 3; g.strokeRect(40, 40, w - 80, h - 80); g.fillStyle = "rgba(143,211,189,.9)"; for (let i = 0; i < 7; i++) { g.save(); g.translate(w / 2, h / 2); g.rotate(i * Math.PI / 3.5); g.fillRect(-6, -60, 12, 120); g.restore(); } }), roughness: 1 }), -.6, .01, -.9, scene);
+const rugMesh = box(6.4, .02, 3.6, M({ map: tex(512, 288, (g, w, h) => { g.fillStyle = "#e9877a"; g.fillRect(0, 0, w, h); g.strokeStyle = "#f7efe0"; g.lineWidth = 8; g.strokeRect(22, 22, w - 44, h - 44); g.lineWidth = 3; g.strokeRect(40, 40, w - 80, h - 80); g.fillStyle = "rgba(143,211,189,.9)"; for (let i = 0; i < 7; i++) { g.save(); g.translate(w / 2, h / 2); g.rotate(i * Math.PI / 3.5); g.fillRect(-6, -60, 12, 120); g.restore(); } }), roughness: 1 }), -.6, .01, -.9, scene);
 
 // ---------------- the bookshelf ----------------
 const SHELF = { x: -.9, z: -4.05, w: 8.6, h: 4.6, d: .9, ys: [.18, 1.28, 2.38, 3.48] };
@@ -720,7 +720,8 @@ const marquee = (p, D) => tex(1024, 300, (g, w, h) => {
   g.fillStyle = "#1f1d22"; let size = 118; g.font = `${size}px 'Patrick Hand', cursive`; while (g.measureText(p.name.toUpperCase()).width > w - 120) { size -= 6; g.font = `${size}px 'Patrick Hand', cursive`; }
   g.fillText(p.name.toUpperCase(), w / 2, 210);
 });
-const posterLoad = (src) => { const t = loader.load(src); t.colorSpace = THREE.SRGBColorSpace; return t; };
+const ANISO = renderer.capabilities.getMaxAnisotropy();
+const posterLoad = (src) => { const t = loader.load(src); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; };
 const carpet = M({ color: "#4a2f45" }), frameInk = M({ color: "#1f1d22" });
 cinemaList.forEach((p, i) => {
   const D = DOMAINS[p.dom], side = i < PER_SIDE ? -1 : 1, k = i % PER_SIDE;
@@ -728,7 +729,7 @@ cinemaList.forEach((p, i) => {
   const xIn = side < 0 ? HALL.x0 - T : HALL.x1 + T, xFar = xIn + side * ROOM.d;          // doorway side and screen side
   const xa = Math.min(xIn, xFar), xb = Math.max(xIn, xFar);
   // floor, ceiling, far wall and the walls either side
-  const fl = new THREE.Mesh(new THREE.PlaneGeometry(ROOM.d, ROOM.w), carpet); fl.rotation.x = -Math.PI / 2; fl.position.set((xa + xb) / 2, .005, zc); fl.receiveShadow = true; scene.add(fl);
+  const fl = new THREE.Mesh(new THREE.PlaneGeometry(ROOM.d, ROOM.w), carpet); fl.userData.isFloor = true; fl.rotation.x = -Math.PI / 2; fl.position.set((xa + xb) / 2, .005, zc); fl.receiveShadow = true; scene.add(fl);
   const ce = new THREE.Mesh(new THREE.PlaneGeometry(ROOM.d + .5, ROOM.w + .5), M({ color: "#20253f", side: THREE.DoubleSide })); ce.rotation.x = Math.PI / 2; ce.position.set((xa + xb) / 2, ROOM.h, zc); scene.add(ce);
   solid(side < 0 ? xFar - T : xFar, side < 0 ? xFar : xFar + T, z0 - T, z1 + T, ROOM.h, roomWall);
   solid(xa, xb, z0 - T, z0, ROOM.h, roomWall); solid(xa, xb, z1, z1 + T, ROOM.h, roomWall);
@@ -737,7 +738,9 @@ cinemaList.forEach((p, i) => {
   const key = VID[p.name] || p.repo, nSlides = SLIDES[key] || 1;
   const poster = posterLoad(`images/slides/${key}-1.jpg`);
   const screenM = new THREE.MeshBasicMaterial({ map: poster, toneMapped: false });
-  const scr = new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), screenM); scr.userData.cinema = cinemas.length; scr.position.set(sx, 2.75, zc); scr.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2; scene.add(scr);
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), screenM); scr.userData.cinema = cinemas.length;
+  const fadeM = new THREE.MeshBasicMaterial({ toneMapped: false, transparent: true, opacity: 0, depthWrite: false });
+  const fadeP = new THREE.Mesh(scr.geometry, fadeM); fadeP.position.z = .01; fadeP.userData.dynamic = true; scr.add(fadeP); scr.userData.dynamic = true; scr.position.set(sx, 2.75, zc); scr.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2; scene.add(scr);
   box(.1, sh + .3, sw + .3, frameInk, sx + side * -.0 + side * .06, 2.75, zc, scene);
   box(1.2, .5, ROOM.w - .6, M({ color: "#3a2a3f" }), xFar - side * .6, .25, zc, scene);       // a little stage under the screen
   SOLIDS.push([Math.min(xFar, xFar - side * 1.2), Math.max(xFar, xFar - side * 1.2), z0, z1]);
@@ -763,7 +766,7 @@ cinemaList.forEach((p, i) => {
   const exitS = new THREE.Mesh(new THREE.PlaneGeometry(.9, .32), new THREE.MeshBasicMaterial({ toneMapped: false, map: tex(256, 92, (g) => { g.fillStyle = "#2f9e6a"; g.fillRect(0, 0, 256, 92); g.fillStyle = "#fff"; g.font = "64px 'Patrick Hand', cursive"; g.textAlign = "center"; g.fillText("EXIT", 128, 70); }) }));
   exitS.position.set(xIn + side * .06, 4.4, zc); exitS.rotation.y = side < 0 ? -Math.PI / 2 : Math.PI / 2; scene.add(exitS);
   const url = EMBED[p.repo] || p.live || null;
-  cinemas.push({ chairPos, p, D, side, xa, xb, z0, z1, zc, screenM, poster, key, nSlides, si: 0, tex: [poster], url, live: !!url && !EMBED_BLOCKED.has(p.repo), scr, sw, sh, normal: new V3(-side, 0, 0), door: new V3(side < 0 ? HALL.x0 : HALL.x1, 0, zc) });
+  cinemas.push({ fadeM, chairPos, p, D, side, xa, xb, z0, z1, zc, screenM, poster, key, nSlides, si: 0, tex: [poster], url, live: !!url && !EMBED_BLOCKED.has(p.repo), scr, sw, sh, normal: new V3(-side, 0, 0), door: new V3(side < 0 ? HALL.x0 : HALL.x1, 0, zc) });
 });
 // the hall's long walls, with a doorway for every room
 const gapsFor = (sd) => cinemas.filter((c) => c.side === sd).map((c) => [c.zc - 1.15, c.zc + 1.15]).sort((a, b) => a[0] - b[0]);
@@ -781,7 +784,7 @@ for (const c of cinemas) {
   const x = c.side < 0 ? HALL.x0 : HALL.x1, inward = -c.side, fm = M({ color: "#e6d8c0" });
   [-1.22, 1.22].forEach((dz) => box(.38, 4.08, .22, fm, x + inward * .05, 2.04, c.zc + dz, scene));     // inner faces sit just inside the opening
   box(.38, .32, 2.68, fm, x + inward * .05, 4.07, c.zc, scene);                                         // and the header just below the wall's lintel
-  const mat = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 2.0), M({ color: mix(c.D.c, "#efe6d6", .86) })); mat.rotation.x = -Math.PI / 2; mat.position.set(x + inward * .85, .015, c.zc); mat.receiveShadow = true; scene.add(mat);
+  const mat = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 2.0), M({ color: mix(c.D.c, "#efe6d6", .86) })); mat.userData.isFloor = true; mat.rotation.x = -Math.PI / 2; mat.position.set(x + inward * .85, .015, c.zc); mat.receiveShadow = true; scene.add(mat);
 }
 for (let k = 0; k <= PER_SIDE; k++) {
   const z = roomZ0(k) + ROOM.w + T / 2 - (k === 0 ? 0 : 0);
@@ -797,7 +800,13 @@ for (let k = 0; k <= PER_SIDE; k++) {
 function slide(c, k) {
   c.si = (k + c.nSlides) % c.nSlides;
   if (!c.tex[c.si]) c.tex[c.si] = posterLoad(`images/slides/${c.key}-${c.si + 1}.jpg`);
-  c.screenM.map = c.tex[c.si]; c.screenM.needsUpdate = true;
+  c.fadeM.map = c.tex[c.si]; c.fadeM.needsUpdate = true; c.fadeM.opacity = 0; c.fading = true;    // fade the new slide in over the old
+}
+function fadeSlides(dt) {
+  for (const c of cinemas) if (c.fading) {
+    c.fadeM.opacity = Math.min(1, c.fadeM.opacity + dt * 1.6);
+    if (c.fadeM.opacity >= 1 && c.fadeM.map.image) { c.screenM.map = c.fadeM.map; c.screenM.needsUpdate = true; c.fadeM.opacity = 0; c.fading = false; }
+  }
 }
 
 // ---------------- you: a small character the camera follows ----------------
@@ -822,7 +831,6 @@ const heroParts = {};
   const tieB = new THREE.Mesh(new THREE.BoxGeometry(.09, .32, .03), tie); tieB.position.set(.01, .52, .21); tieB.rotation.z = .08; hips.add(tieB);
   const seat = new THREE.Mesh(new THREE.CylinderGeometry(.25, .22, .3, 24), trousers); seat.position.y = .02; seat.scale.z = .84; hips.add(seat);           // the trousers' waist, the shirt tucked in
   const belt = new THREE.Mesh(new THREE.CylinderGeometry(.258, .258, .07, 24), M({ color: "#1d2236" })); belt.position.y = .17; belt.scale.z = .86; hips.add(belt);
-  const bag = new THREE.Mesh(new THREE.BoxGeometry(.38, .46, .17), pack); bag.position.set(0, .44, -.3); bag.castShadow = true; hips.add(bag);
   heroParts.armL = limb(.07, .5, shirt); heroParts.armL.position.set(-.31, .72, 0); heroParts.armL.rotation.z = -.08; hips.add(heroParts.armL);
   heroParts.armR = limb(.07, .5, shirt); heroParts.armR.position.set(.31, .72, 0); heroParts.armR.rotation.z = .08; hips.add(heroParts.armR);
   [heroParts.armL, heroParts.armR].forEach((a) => { const h = new THREE.Mesh(new THREE.SphereGeometry(.062, 16, 12), skin); h.scale.set(.85, 1.15, .8); h.position.y = -.68; a.add(h); });
@@ -1034,7 +1042,7 @@ function bake(root) {
     if (!o.isMesh || Array.isArray(o.material) || !o.visible) return;
     for (let a = o; a; a = a.parent) if (a.userData.dynamic) return;
     if (o.children.some((c) => !(c.isMesh && c.userData.ink))) return;
-    const m = o.material, key = [m.type, m.color?.getHexString(), m.map?.uuid, m.side, m.transparent, m.opacity, m.emissive?.getHexString(), m.emissiveIntensity, m.toneMapped].join("|");
+    const m = o.material, key = [m.type, m.color?.getHexString(), m.map?.uuid, m.side, m.transparent, m.opacity, m.emissive?.getHexString(), m.emissiveIntensity, m.toneMapped, o.layers.mask].join("|");
     let g = groups.get(key); if (!g) groups.set(key, (g = { mat: m, list: [] }));
     g.list.push(o);
   });
@@ -1044,7 +1052,7 @@ function bake(root) {
     const geos = g.list.map((o) => { const ge = (o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone()); for (const k of Object.keys(ge.attributes)) if (!["position", "normal", "uv"].includes(k)) ge.deleteAttribute(k); if (!ge.attributes.uv) return null; ge.clearGroups(); ge.applyMatrix4(o.matrixWorld); return ge; });
     if (geos.some((x) => !x)) continue;
     const geo = mergeGeometries(geos, false); if (!geo) continue;
-    const mesh = new THREE.Mesh(geo, g.mat); mesh.castShadow = g.list.some((o) => o.castShadow); mesh.receiveShadow = g.list.some((o) => o.receiveShadow);
+    const mesh = new THREE.Mesh(geo, g.mat); mesh.layers.mask = g.list[0].layers.mask; mesh.castShadow = g.list.some((o) => o.castShadow); mesh.receiveShadow = g.list.some((o) => o.receiveShadow);
     mesh.userData.baked = true; mesh.raycast = () => {}; scene.add(mesh);
     g.list.forEach((o) => (o.material = HIDE)); merged += g.list.length;
   }
@@ -1198,6 +1206,7 @@ function frameLoop() {
     if (me.x > c.xa && me.x < c.xb && me.z > c.z0 && me.z < c.z1) inside = c;
   }
   if (inside !== shown) showRoom(inside);
+  fadeSlides(dt);
   // where an opened book is held: in front of the camera, a little low, tilted back
   const fwd = cb.look.clone().sub(cb.pos).normalize(), right = new V3().crossVectors(fwd, up).normalize(), camUp = new V3().crossVectors(right, fwd);
   const narrow = W / H < 1, DREAD = 3.3, hh = DREAD * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
