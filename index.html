@@ -759,7 +759,19 @@ const gapsFor = (sd) => cinemas.filter((c) => c.side === sd).map((c) => [c.zc - 
 wallZ(HALL.x0 - T, HALL.x0, HALL.z0, HALL.z1, gapsFor(-1), HALL.h, hallWall);
 wallZ(HALL.x1, HALL.x1 + T, HALL.z0, HALL.z1, gapsFor(1), HALL.h, hallWall);
 // a mint dado along the hall, plants between the doors
-[HALL.x0 + .03, HALL.x1 - .03].forEach((x) => box(.06, 1.1, HALL.z1 - HALL.z0, trim, x, .55, (HALL.z0 + HALL.z1) / 2, scene));
+// the mint dado stops at every doorway, so each entrance is clearly open
+[[HALL.x0 + .03, -1], [HALL.x1 - .03, 1]].forEach(([x, sd]) => {
+  let z = HALL.z0;
+  for (const [g0, g1] of gapsFor(sd)) { if (g0 - .25 > z) box(.06, 1.1, g0 - .25 - z, trim, x, .55, (z + g0 - .25) / 2, scene); z = g1 + .25; }
+  if (z < HALL.z1) box(.06, 1.1, HALL.z1 - z, trim, x, .55, (z + HALL.z1) / 2, scene);
+});
+// every doorway gets a frame in its project's colour and a doormat
+for (const c of cinemas) {
+  const x = c.side < 0 ? HALL.x0 : HALL.x1, inward = -c.side, fm = M({ color: c.D.c });
+  [-1.25, 1.25].forEach((dz) => box(.36, 4.15, .2, fm, x + inward * .04, 2.075, c.zc + dz, scene));
+  box(.36, .24, 2.7, fm, x + inward * .04, 4.12, c.zc, scene);
+  const mat = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 2.0), M({ color: c.D.c })); mat.rotation.x = -Math.PI / 2; mat.position.set(x + inward * .85, .015, c.zc); mat.receiveShadow = true; scene.add(mat);
+}
 for (let k = 0; k <= PER_SIDE; k++) {
   const z = roomZ0(k) + ROOM.w + T / 2 - (k === 0 ? 0 : 0);
   if (z > HALL.z1 - .5 || z < HALL.z0 + .5) continue;
