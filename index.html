@@ -203,8 +203,7 @@
   .vision a { border: 2px solid #1f1d22; box-shadow: 2px 2px 0 #1f1d22; font-family: var(--sans); }
   .vision a.ghost { background: #fff; }
   .vision .x { border: 2px solid #1f1d22; box-shadow: 2px 2px 0 #1f1d22; }
-  .room { background: #f3d3c4; }        /* the wall colour: any hairline crack between surfaces blends in */
-  :root[data-theme="dark"] .room { background: #8f8aa8; }
+  .room { background: #8fd3bd; }
   .stick { background: rgba(255, 253, 247, .35); box-shadow: inset 0 0 0 2.5px #1f1d22, 3px 3px 0 rgba(31, 29, 34, .5); }
   .stick i { background: #fffdf7; box-shadow: inset 0 0 0 2.5px #1f1d22; }
 
@@ -1047,7 +1046,6 @@ function paintTheme() {
   hemi.intensity = night ? .45 : 1.3; sun.intensity = night ? .55 : 2.6; sun.color.set(night ? "#8ea6ff" : "#fff1dc");
   lamp.intensity = night ? 16 : 6; 
   wallMat.color.set(night ? "#8f8aa8" : "#f3d3c4");
-  renderer.setClearColor(night ? "#8f8aa8" : "#f3d3c4", 1);          // cracks between surfaces show wall colour, not a flash of mint
 }
 paintTheme();
 new MutationObserver(paintTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
