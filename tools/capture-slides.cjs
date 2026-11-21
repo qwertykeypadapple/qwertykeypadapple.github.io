@@ -9,6 +9,7 @@ const crypto = require("crypto");
 const G = "https://qwertykeypadapple.github.io/";
 // how: "scroll" = one slide per screenful; "deck" = right arrow between slides; "enter" = press Enter between slides
 const SITES = [
+  ["flwr-viz", G + "flwr-viz/", "scroll"],
   ["investor-connect", "https://investor-connect-051f.onrender.com/", "scroll"],
   ["fedpbc-demo", G + "fedpbc-demo/", "scroll"],
   ["federation-quest", G + "federation-quest/", "enter"],
@@ -30,7 +31,7 @@ const MAX = 8;
   const dir = path.join(__dirname, "..", "images", "slides"); fs.mkdirSync(dir, { recursive: true });
   const indexFile = path.join(dir, "index.json");
   const index = fs.existsSync(indexFile) ? JSON.parse(fs.readFileSync(indexFile, "utf8")) : {};
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
   for (const [name, url, how] of SITES.filter(([n]) => !only.length || only.includes(n))) {
     const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 2 });
     try {

@@ -4,6 +4,7 @@ const { chromium } = require("playwright");
 const path = require("path");
 
 const shots = [
+  ["flwr-viz", "https://qwertykeypadapple.github.io/flwr-viz/"],
   ["fedpbc-demo", "https://fedpbc-demo.onrender.com/"],
   ["federation-quest", "https://federation-quest.onrender.com/"],
   ["thinking-outside-the-box", "https://nukkadai.onrender.com/"],
@@ -25,7 +26,7 @@ const shots = [
 
 (async () => {
   const only = process.argv.slice(2);
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
   await Promise.all(
     shots
       .filter(([name]) => !only.length || only.includes(name))

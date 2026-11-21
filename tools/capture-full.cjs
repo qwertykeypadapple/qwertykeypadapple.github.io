@@ -4,6 +4,7 @@ const { chromium } = require("playwright");
 const path = require("path");
 const G = "https://qwertykeypadapple.github.io/";
 const shots = [
+  ["flwr-viz", G + "flwr-viz/"],
   ["investor-connect", "https://investor-connect-051f.onrender.com/"],
   ["fedpbc-demo", G + "fedpbc-demo/"],
   ["federation-quest", G + "federation-quest/"],
@@ -15,7 +16,7 @@ const shots = [
 ];
 (async () => {
   const only = process.argv.slice(2);
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
   for (const [name, url] of shots.filter(([n]) => !only.length || only.includes(n))) {
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     try {

@@ -338,10 +338,10 @@ const projects = [
     text: "A free, unofficial fan word game: spell Pokémon names with letter tiles, beat the gyms, clear all nine regions.",
     q: "Can you <em>spell</em> Pikachu?",
     a: "Spell Pokémon names with letter tiles and <b>beat the gyms</b>." },
-  { repo: "battery-analytics-prototype", name: "Battery Analytics", dom: "auto", kind: "Research", img: "battery-analytics-prototype.png", private: true,
-    text: "Estimates battery health and remaining life from charging data alone, validated on whole cells, with a fleet dashboard.",
-    q: "Is this battery <em>healthy</em>?",
-    a: "Health and remaining life, read from <b>charging data alone</b>." },
+  { repo: "flwr-viz", name: "flwr·viz", dom: "fl", room: "auto", kind: "Plug-in · teaching tool", img: "flwr-viz.jpg", live: "https://qwertykeypadapple.github.io/flwr-viz/",
+    text: "A plug-in for the Flower framework that turns any federated-learning run into a live 3D scene: clients as characters, messages as paper planes, and a question-driven tour.",
+    q: "What does federated learning <em>look</em> like?",
+    a: "Any Flower run as a <b>live 3D scene</b>: click a client, ask a question, watch a round." },
   { repo: "logic-bench", name: "Logic Bench", dom: "edu", kind: "Lab course", img: "logic-bench.jpg", live: "https://logic-bench.onrender.com/", private: true,
     text: "A digital logic lab course in the browser: wire chips on a breadboard, write Verilog and RISC-V assembly, program an Arduino. Every lab checks itself.",
     q: "Can you build a circuit with <em>no chips</em>?",
@@ -521,7 +521,7 @@ box(1.34, .84, .02, M({ map: ttex(3, 256, 160, (g) => { g.fillStyle = "#f6efe2";
 
 // ---------------- books ----------------
 const loader = new THREE.TextureLoader();
-const FULL = new Set(['investor-connect', 'fedpbc-demo', 'federation-quest', 'fedmse-arcade', 'flprogress-explained', 'thinking-outside-the-box', 'pokewords', 'logic-bench']);
+const FULL = new Set(['flwr-viz', 'investor-connect', 'fedpbc-demo', 'federation-quest', 'fedmse-arcade', 'flprogress-explained', 'thinking-outside-the-box', 'pokewords', 'logic-bench']);
 const ORDER = ["fintech", "fl", "algo", "auto", "health", "social", "edu", "industry"];
 const items = projects.slice().sort((a, b) => ORDER.indexOf(a.dom) - ORDER.indexOf(b.dom));
 const rows = [items.filter((p) => ["fintech", "fl", "algo"].includes(p.dom)), items.filter((p) => !["fintech", "fl", "algo"].includes(p.dom))];
@@ -712,7 +712,9 @@ const VID = { "FedAML Pitch": "fedaml-pitch", "FedAML Results": "fedaml-results"
 // rooms come in facing pairs from the entrance: the bearing pitch and its results first, then social & games, then the rest by field
 const FIRST = ["Bearing Collective", "Ask the Vibration", "Nukkad AI", "PokéWords"];
 const cinemaList = [...FIRST.map((n) => projects.find((p) => p.name === n)).filter(Boolean),
-  ...projects.filter((p) => !FIRST.includes(p.name)).sort((a, b) => ORDER2.indexOf(a.dom) - ORDER2.indexOf(b.dom))];
+  ...projects.filter((p) => !FIRST.includes(p.name)).sort((a, b) => ORDER2.indexOf(a.room || a.dom) - ORDER2.indexOf(b.room || b.dom))];
+// p.room overrides the field used for the door order only (flwr·viz took Battery Analytics' old door, Aman's call);
+// the book on the library shelf still sits with its own field
 const PER_SIDE = Math.ceil(cinemaList.length / 2), PITCH = ROOM.w + T;
 const roomZ0 = (i) => HALL.z1 - T - (i + 1) * PITCH + T;     // rooms are counted from the entrance end
 const cinemas = [];
@@ -1079,7 +1081,7 @@ function bake(root) {
 const HIDE = new THREE.MeshBasicMaterial({ visible: false });
 bake(scene);
 scene.updateMatrixWorld(true);            // walls must be in place before the camera checks them on the first frame
-window.__dbg = { me, renderer };      // lets automated checks move you around
+window.__dbg = { me, renderer, cinemas };      // lets automated checks move you around
 
 // the card for the cinema you're standing in
 let shown = null;
