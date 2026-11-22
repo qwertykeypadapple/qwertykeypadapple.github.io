@@ -13,7 +13,7 @@ const SITES = [
   ["investor-connect", "https://investor-connect-051f.onrender.com/", "scroll"],
   ["fedpbc-demo", G + "fedpbc-demo/", "scroll"],
   ["federation-quest", G + "federation-quest/", "enter"],
-  ["fedmse-arcade", G + "fedmse-arcade/", "scroll"],
+  ["proposal-slide", G + "proposal-slide/", "deck"],
   ["flprogress-explained", G + "flprogress-explained/", "scroll"],
   ["neural-debris-solution", G + "neural-debris-solution/attempt-map.html", "scroll"],
   ["thinking-outside-the-box", "https://nukkadai.onrender.com/", "scroll"],

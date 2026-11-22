@@ -2,7 +2,6 @@
  "investor-connect": 2,
  "fedpbc-demo": 8,
  "federation-quest": 8,
- "fedmse-arcade": 3,
  "flprogress-explained": 8,
  "neural-debris-solution": 8,
  "thinking-outside-the-box": 5,
@@ -15,5 +14,6 @@
  "ask-the-vibration": 8,
  "doclaw-app": 3,
  "battery-analytics-prototype": 2,
- "flwr-viz": 8
+ "flwr-viz": 8,
+ "proposal-slide": 8
 }

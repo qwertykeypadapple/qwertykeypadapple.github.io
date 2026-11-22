@@ -318,10 +318,10 @@ const projects = [
     text: "An RPG that teaches a federated-learning paper. Talk to the Oracle, clear quests, and leave understanding arXiv:2404.10091.",
     q: "Can you learn a paper by <em>playing</em>?",
     a: "An RPG: talk to the Oracle, clear quests, <b>understand the paper</b>." },
-  { repo: "fedmse-arcade", name: "FedMSE Arcade", dom: "fl", kind: "Games", img: "fedmse-arcade.jpg", live: "https://qwertykeypadapple.github.io/fedmse-arcade/",
-    text: "Eight short browser games that teach a federated-learning paper on catching hackers in smart-home networks, for beginners.",
-    q: "How does a smart home catch <em>hackers</em>?",
-    a: "Eight short games. <b>No AI background needed.</b>" },
+  { repo: "proposal-slide", name: "Share the Lesson", dom: "fintech", room: "fl", kind: "Research proposal", img: "deck-proposal.jpg", live: "https://qwertykeypadapple.github.io/proposal-slide/", deck: true,
+    text: "A research proposal: phones learn from their owners' UPI payments and share only what they learned, never the payments, to give personal money advice and forecast markets privately and with less energy.",
+    q: "Can phones learn from <em>payments</em> without sharing them?",
+    a: "A research proposal: <b>share the lesson, not the ledger</b>." },
   { repo: "flprogress-explained", name: "FLPro", dom: "fl", kind: "Research · Games", img: "flpro.jpg", live: "https://qwertykeypadapple.github.io/flprogress-explained/",
     text: "Picks federated-learning clients by how fast they improve the model, not by how high their loss is, so noisy-label clients can't fool it.",
     q: "Who should a model <em>learn</em> from?",
@@ -521,7 +521,7 @@ box(1.34, .84, .02, M({ map: ttex(3, 256, 160, (g) => { g.fillStyle = "#f6efe2";
 
 // ---------------- books ----------------
 const loader = new THREE.TextureLoader();
-const FULL = new Set(['flwr-viz', 'investor-connect', 'fedpbc-demo', 'federation-quest', 'fedmse-arcade', 'flprogress-explained', 'thinking-outside-the-box', 'pokewords', 'logic-bench']);
+const FULL = new Set(['flwr-viz', 'investor-connect', 'fedpbc-demo', 'federation-quest', 'flprogress-explained', 'thinking-outside-the-box', 'pokewords', 'logic-bench']);
 const ORDER = ["fintech", "fl", "algo", "auto", "health", "social", "edu", "industry"];
 const items = projects.slice().sort((a, b) => ORDER.indexOf(a.dom) - ORDER.indexOf(b.dom));
 const rows = [items.filter((p) => ["fintech", "fl", "algo"].includes(p.dom)), items.filter((p) => !["fintech", "fl", "algo"].includes(p.dom))];
@@ -723,7 +723,7 @@ const marquee = (p, D, top) => ttex(2, 1024, 300, (g, w, h) => {
   g.fillStyle = mix(D.c, "#fbf6ec", .6); g.fillRect(16, 16, w - 32, h - 32);
   g.fillStyle = "#fffdf7"; g.fillRect(30, 30, w - 60, h - 60);
   for (let x = 46; x < w - 30; x += 38) { g.fillStyle = "#f7dc9a"; g.beginPath(); g.arc(x, 23, 7, 0, 7); g.arc(x, h - 23, 7, 0, 7); g.fill(); }
-  g.fillStyle = D.c; g.textAlign = "center"; g.font = "42px 'Patrick Hand', cursive"; g.fillText(top || (p.deck ? "NOW SHOWING · PITCH DECK" : "NOW SHOWING"), w / 2, 92);
+  g.fillStyle = D.c; g.textAlign = "center"; g.font = "42px 'Patrick Hand', cursive"; g.fillText(top || (p.deck ? "NOW SHOWING · " + p.kind.toUpperCase() : "NOW SHOWING"), w / 2, 92);
   g.fillStyle = "#1f1d22"; let size = 118; g.font = `${size}px 'Patrick Hand', cursive`; while (g.measureText(p.name.toUpperCase()).width > w - 120) { size -= 6; g.font = `${size}px 'Patrick Hand', cursive`; }
   g.fillText(p.name.toUpperCase(), w / 2, 210);
 });
@@ -982,7 +982,7 @@ room.addEventListener("pointermove", (e) => {
   }
   if (active || e.pointerType !== "mouse") return;
   hover = pick(e); room.classList.toggle("hot", !!hover);
-  if (hover) { tip.innerHTML = `${hover.userData.p.name}<small>${hover.userData.p.deck ? "Pitch deck" : DOMAINS[hover.userData.p.dom].label}</small>`; tip.style.setProperty("--dc", hover.userData.D.c); tip.style.left = e.clientX - r.left + "px"; tip.style.top = e.clientY - r.top + "px"; }
+  if (hover) { tip.innerHTML = `${hover.userData.p.name}<small>${hover.userData.p.deck ? hover.userData.p.kind : DOMAINS[hover.userData.p.dom].label}</small>`; tip.style.setProperty("--dc", hover.userData.D.c); tip.style.left = e.clientX - r.left + "px"; tip.style.top = e.clientY - r.top + "px"; }
   tip.classList.toggle("on", !!hover);
 });
 const endDrag = (e) => {
@@ -1024,7 +1024,7 @@ function open(b) {
   active = b; b.userData.goal = 1; b.userData.t0 = performance.now();
   const p = b.userData.p, D = b.userData.D;
   room.classList.add("open"); room.style.setProperty("--dc", D.c); tip.classList.remove("on");
-  vision.innerHTML = `<button class="x" type="button" aria-label="Close">×</button><div class="dom"><i></i>${p.deck ? "Pitch deck · " : ""}${DOMAINS[p.dom].label}</div><h3>${p.name}</h3><p class="q">${p.q}</p><div class="links">${linksFor(p)}</div>`;
+  vision.innerHTML = `<button class="x" type="button" aria-label="Close">×</button><div class="dom"><i></i>${p.deck ? p.kind + " · " : ""}${DOMAINS[p.dom].label}</div><h3>${p.name}</h3><p class="q">${p.q}</p><div class="links">${linksFor(p)}</div>`;
   vision.querySelector(".x").addEventListener("click", (e) => { e.stopPropagation(); close(); });
   const t = previewFor(p); screenMat.map = t; screenMat.needsUpdate = true; if (t.image) fitPreview(t);
   
@@ -1090,7 +1090,7 @@ function showRoom(c) {
   shown = c; room.classList.toggle("inroom", !!c);
   if (!c) return;
   const p = c.p; room.style.setProperty("--dc", c.D.c);
-  roomCard.innerHTML = `<div class="dom"><i></i>${p.deck ? "Pitch deck · " : ""}${DOMAINS[p.dom].label}</div><h3>${p.name}</h3><p class="q">${p.q}</p><div class="links"><a href="#" class="watch">🪑 Sit</a>${linksFor(p).replace(/<a href/, '<a class="ghost" href')}</div>`;
+  roomCard.innerHTML = `<div class="dom"><i></i>${p.deck ? p.kind + " · " : ""}${DOMAINS[p.dom].label}</div><h3>${p.name}</h3><p class="q">${p.q}</p><div class="links"><a href="#" class="watch">🪑 Sit</a>${linksFor(p).replace(/<a href/, '<a class="ghost" href')}</div>`;
   roomCard.querySelector(".watch").addEventListener("click", (e) => { e.preventDefault(); startWatching(c); });
 }
 

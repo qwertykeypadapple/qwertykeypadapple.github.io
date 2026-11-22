@@ -10,7 +10,7 @@ const shots = [
   ["thinking-outside-the-box", "https://nukkadai.onrender.com/"],
   ["investor-connect", "https://investor-connect-051f.onrender.com/"],
   ["samhita-health", "https://samhita-health.onrender.com/"],
-  ["fedmse-arcade", "https://qwertykeypadapple.github.io/fedmse-arcade/"],
+  ["deck-proposal", "https://qwertykeypadapple.github.io/proposal-slide/"],
   ["flpro", "https://qwertykeypadapple.github.io/flprogress-explained/"],
   ["deck-fedaml", "https://qwertykeypadapple.github.io/fedaml-decks/"],
   ["deck-fedaml-results", "https://qwertykeypadapple.github.io/fedaml-decks/results.html"],
