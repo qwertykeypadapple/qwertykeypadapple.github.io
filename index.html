@@ -393,7 +393,7 @@ themeBtn.addEventListener("click", () => {
 });
 syncThemeLabel();
 </script>
-<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }</script>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/", "troika-three-text": "https://esm.sh/troika-three-text@0.52.4?external=three" } }</script>
 <script type="module">
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
@@ -419,11 +419,57 @@ const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a
 const mix = (a, b, t) => "#" + new THREE.Color(a).lerp(new THREE.Color(b), t).getHexString();
 
 // ---------------- painted textures ----------------
-const ttex = (S, w, h, draw) => tex(w, h, draw, null, S);          // text: painted at S times the resolution
+// text on signs, spines and plaques is drawn as real vector (SDF) text, sharp at any distance like the page's own labels.
+// ttex paints the background into a canvas but only records the words; vectorize() later places them over the surface.
+const FONT_URL = "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/patrickhand/PatrickHand-Regular.ttf";
+let TText = null;
+try { const [mod, ok] = await Promise.all([import("troika-three-text"), fetch(FONT_URL, { method: "HEAD" }).then((r) => r.ok)]); if (ok) { TText = mod.Text; mod.preloadFont({ font: FONT_URL, characters: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789·.,&'-–ÉéŁ" }, () => {}); } } catch (e) { TText = null; }    // if it can't load, words stay painted
+const ttex = (S, w, h, draw) => {
+  let texts = null;
+  const t = tex(w, h, (g, W, H) => {
+    if (TText) { texts = []; g.fillText = (str, x, y) => { const m = g.getTransform(); texts.push({ str: String(str), m: [m.a, m.b, m.c, m.d, m.e + m.a * x + m.c * y, m.f + m.b * x + m.d * y], font: g.font, color: g.fillStyle, align: g.textAlign, base: g.textBaseline }); }; }
+    draw(g, W, H);
+  }, null, S);
+  if (texts && texts.length) t.userData.texts = texts;
+  return t;
+};
+// place a texture's recorded words over a surface of size pw x ph (local units), facing +z of `holderParent`
+function placeWords(parent, texts, CW, CH, pw, ph, pos, rotY) {
+  const holder = new THREE.Group(); holder.position.copy(pos); holder.rotation.y = rotY; parent.add(holder);
+  const inner = new THREE.Group(); inner.position.set(-pw / 2, ph / 2, 0); inner.scale.set(pw / CW, -ph / CH, 1); holder.add(inner);   // canvas pixels, y down
+  for (const w of texts) {
+    const [a, b, , , e, f] = w.m, k = Math.hypot(a, b), px = parseFloat(/(\d+(?:\.\d+)?)px/.exec(w.font)?.[1] || 16);
+    const t = new TText(); t.text = w.str; t.font = FONT_URL; t.fontSize = px; t.color = w.color; t.sdfGlyphSize = 128;
+    t.anchorX = w.align === "center" ? "center" : (w.align === "right" || w.align === "end") ? "right" : "left";
+    t.anchorY = w.base === "middle" ? "middle" : w.base === "top" ? "top" : w.base === "bottom" ? "bottom" : "bottom-baseline";
+    t.position.set(e, f, 0); t.rotation.z = Math.atan2(b, a); t.scale.set(k, -k, 1);
+    t.userData.dynamic = true; t.userData.noInk = true; t.castShadow = false; t.raycast = () => {};
+    t.material.polygonOffset = true; t.material.polygonOffsetFactor = -2; t.material.polygonOffsetUnits = -2;
+    inner.add(t); t.sync();
+  }
+}
+// find every surface showing recorded words and put the vector text on it (planes: the front; boxes: +z, or the face that holds the map)
+function vectorize(root) {
+  if (!TText) return;
+  const list = []; root.traverse((o) => { if (o.isMesh && !o.userData.ink) list.push(o); });
+  for (const o of list) {
+    const mats = Array.isArray(o.material) ? o.material : [o.material], gp = o.geometry.parameters || {};
+    mats.forEach((m, i) => {
+      const tx = m && m.map, texts = tx && tx.userData.texts; if (!texts) return;
+      const cw = tx.image.width, ch = tx.image.height;          // recorded positions are in the canvas's own pixels
+      if (o.geometry.type === "PlaneGeometry") placeWords(o, texts, cw, ch, gp.width, gp.height, new V3(0, 0, .004), 0);
+      else if (o.geometry.type === "BoxGeometry") {
+        if (!Array.isArray(o.material) || i === 4) placeWords(o, texts, cw, ch, gp.width, gp.height, new V3(0, 0, gp.depth / 2 + .002), 0);
+        else if (i === 1) placeWords(o, texts, cw, ch, gp.depth, gp.height, new V3(-gp.width / 2 - .002, 0, 0), -Math.PI / 2);
+        else if (i === 0) placeWords(o, texts, cw, ch, gp.depth, gp.height, new V3(gp.width / 2 + .002, 0, 0), Math.PI / 2);
+      }
+    });
+  }
+}
 function tex(w, h, draw, repeat, S = 1) {
   const c = document.createElement("canvas"); c.width = Math.round(w * S); c.height = Math.round(h * S);
   const g = c.getContext("2d"); g.scale(S, S); g.imageSmoothingQuality = "high"; draw(g, w, h);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const t = new THREE.CanvasTexture(c); t.userData.S = S; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
   if (repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(...repeat); }
   return t;
 }
@@ -1052,7 +1098,7 @@ function paintTheme() {
 paintTheme();
 new MutationObserver(paintTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
-ink(hero, .022); ink(scene);
+vectorize(scene); ink(hero, .022); ink(scene);
 // smoothness: the building never moves, so draw all pieces that look alike as one mesh.
 // The originals stay in place, hidden, for collisions and the camera's wall checks.
 function bake(root) {
